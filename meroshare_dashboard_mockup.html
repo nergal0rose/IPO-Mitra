@@ -1,0 +1,282 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .app { display: flex; height: 580px; background: #0B0F1A; border-radius: 12px; overflow: hidden; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; color: #F3F4F6; }
+  .sidebar { width: 200px; background: #111827; border-right: 1px solid #1F2937; display: flex; flex-direction: column; padding: 16px 0; flex-shrink: 0; }
+  .logo { padding: 4px 16px 20px; display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 28px; height: 28px; background: #F5A623; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #000; }
+  .logo-text { font-size: 13px; font-weight: 600; color: #F3F4F6; line-height: 1.2; }
+  .logo-sub { font-size: 10px; color: #6B7280; }
+  .nav { flex: 1; padding: 0 8px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; color: #9CA3AF; font-size: 12.5px; }
+  .nav-item.active { background: rgba(245,166,35,0.1); color: #F5A623; border-left: 2px solid #F5A623; }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .nav-section { font-size: 10px; color: #4B5563; text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 10px 4px; }
+  .accounts-bottom { padding: 12px 8px; border-top: 1px solid #1F2937; display: flex; flex-direction: column; gap: 6px; }
+  .acct-badge { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 7px; background: #1C2333; }
+  .acct-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .acct-name { font-size: 11px; color: #9CA3AF; flex: 1; }
+  .acct-status { font-size: 10px; font-weight: 500; }
+  .main { flex: 1; overflow-y: auto; padding: 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; }
+  .page-title { font-size: 16px; font-weight: 600; color: #F3F4F6; }
+  .page-sub { font-size: 11px; color: #6B7280; margin-top: 2px; }
+  .topbar-right { display: flex; gap: 8px; align-items: center; }
+  .btn { padding: 7px 14px; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: #F5A623; color: #000; }
+  .btn-ghost { background: transparent; border: 1px solid #374151; color: #9CA3AF; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-title { font-size: 12px; font-weight: 500; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .stat-card { background: #111827; border: 1px solid #1F2937; border-radius: 10px; padding: 12px 14px; }
+  .stat-label { font-size: 11px; color: #6B7280; margin-bottom: 5px; }
+  .stat-value { font-size: 20px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+  .stat-sub { font-size: 10px; color: #6B7280; margin-top: 3px; }
+  .ipo-grid { display: flex; flex-direction: column; gap: 8px; }
+  .ipo-card { background: #111827; border: 1px solid #1F2937; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; position: relative; overflow: hidden; }
+  .ipo-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .ipo-card.urgent::before { background: #EF4444; }
+  .ipo-card.soon::before { background: #F59E0B; }
+  .ipo-card.normal::before { background: #374151; }
+  .ipo-info { flex: 1; }
+  .ipo-name { font-size: 13px; font-weight: 500; color: #F3F4F6; margin-bottom: 4px; }
+  .ipo-meta { display: flex; align-items: center; gap: 8px; }
+  .badge { padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .badge-info { background: rgba(59,130,246,0.12); color: #3B82F6; }
+  .badge-warning { background: rgba(245,158,11,0.12); color: #F59E0B; }
+  .badge-success { background: rgba(34,197,94,0.12); color: #22C55E; }
+  .badge-neutral { background: rgba(107,114,128,0.12); color: #9CA3AF; }
+  .ipo-countdown { font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+  .ipo-countdown.urgent { color: #EF4444; }
+  .ipo-countdown.soon { color: #F59E0B; }
+  .ipo-countdown.normal { color: #6B7280; }
+  .ipo-right { display: flex; align-items: center; gap: 10px; }
+  .ipo-price { text-align: right; }
+  .price-val { font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: #F5A623; }
+  .price-label { font-size: 10px; color: #6B7280; }
+  .btn-apply { padding: 6px 12px; border-radius: 6px; background: #F5A623; color: #000; font-size: 11px; font-weight: 600; border: none; cursor: pointer; white-space: nowrap; }
+  .btn-applied { padding: 6px 12px; border-radius: 6px; background: rgba(34,197,94,0.1); color: #22C55E; font-size: 11px; font-weight: 500; border: 1px solid rgba(34,197,94,0.2); white-space: nowrap; }
+  .btn-skip { padding: 6px 10px; border-radius: 6px; background: transparent; color: #4B5563; font-size: 11px; border: 1px solid #1F2937; cursor: pointer; }
+  .health-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .health-card { background: #111827; border: 1px solid #1F2937; border-radius: 9px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+  .health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .health-name { font-size: 12px; font-weight: 500; flex: 1; }
+  .health-info { font-size: 10px; color: #6B7280; text-align: right; font-family: 'JetBrains Mono', monospace; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">M</div>
+      <div>
+        <div class="logo-text">MeroShare</div>
+        <div class="logo-sub">IPO Manager</div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nav-section">Main</div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Accounts
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Apply
+      </div>
+      <div class="nav-section">Analysis</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Reports
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Portfolio
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendar
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Scheduler
+      </div>
+    </div>
+    <div class="accounts-bottom">
+      <div style="font-size:10px;color:#4B5563;text-transform:uppercase;letter-spacing:0.08em;padding:0 2px 4px;">Accounts</div>
+      <div class="acct-badge">
+        <div class="acct-dot" style="background:#22C55E"></div>
+        <div class="acct-name">Prakash</div>
+        <div class="acct-status" style="color:#22C55E">●</div>
+      </div>
+      <div class="acct-badge">
+        <div class="acct-dot" style="background:#22C55E"></div>
+        <div class="acct-name">Family 1</div>
+        <div class="acct-status" style="color:#22C55E">●</div>
+      </div>
+      <div class="acct-badge">
+        <div class="acct-dot" style="background:#EF4444"></div>
+        <div class="acct-name">Family 2</div>
+        <div class="acct-status" style="color:#EF4444">●</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">IPO Dashboard</div>
+        <div class="page-sub">Sunday, 20 Apr 2025 · Last synced 2 min ago</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost">↻ Refresh</button>
+        <button class="btn btn-primary">⚡ Bulk Apply</button>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Open IPOs</div>
+        <div class="stat-value" style="color:#F5A623">4</div>
+        <div class="stat-sub">2 closing soon</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Applied (this cycle)</div>
+        <div class="stat-value" style="color:#22C55E">8</div>
+        <div class="stat-sub">3 accounts × 2 IPOs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Result</div>
+        <div class="stat-value" style="color:#F59E0B">5</div>
+        <div class="stat-sub">Allotment pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Allotted</div>
+        <div class="stat-value" style="color:#3B82F6">120</div>
+        <div class="stat-sub">kitta this year</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <div class="section-title">Open IPOs</div>
+        <div style="font-size:11px;color:#6B7280;">4 active subscriptions</div>
+      </div>
+      <div class="ipo-grid">
+        <div class="ipo-card urgent">
+          <div class="ipo-info">
+            <div class="ipo-name">Nepal Infrastructure Bank Ltd.</div>
+            <div class="ipo-meta">
+              <span class="badge badge-info">IPO</span>
+              <span class="badge badge-warning">Ordinary</span>
+              <span class="ipo-countdown urgent">⏱ Closes today 17:00</span>
+            </div>
+          </div>
+          <div class="ipo-right">
+            <div class="ipo-price">
+              <div class="price-val">Rs. 100</div>
+              <div class="price-label">per share · min 10</div>
+            </div>
+            <button class="btn-apply">Apply Now</button>
+            <button class="btn-skip">Skip</button>
+          </div>
+        </div>
+
+        <div class="ipo-card soon">
+          <div class="ipo-info">
+            <div class="ipo-name">Himalayan Urja Bikas Company Ltd.</div>
+            <div class="ipo-meta">
+              <span class="badge badge-info">IPO</span>
+              <span class="badge badge-neutral">Hydropower</span>
+              <span class="ipo-countdown soon">⏱ 1 day 6 hrs left</span>
+            </div>
+          </div>
+          <div class="ipo-right">
+            <div class="ipo-price">
+              <div class="price-val">Rs. 100</div>
+              <div class="price-label">per share · min 10</div>
+            </div>
+            <div class="btn-applied">✓ Applied</div>
+          </div>
+        </div>
+
+        <div class="ipo-card normal">
+          <div class="ipo-info">
+            <div class="ipo-name">Sanima Mai Hydropower Ltd.</div>
+            <div class="ipo-meta">
+              <span class="badge badge-info">FPO</span>
+              <span class="badge badge-neutral">Hydropower</span>
+              <span class="ipo-countdown normal">3 days left</span>
+            </div>
+          </div>
+          <div class="ipo-right">
+            <div class="ipo-price">
+              <div class="price-val">Rs. 230</div>
+              <div class="price-label">per share · min 10</div>
+            </div>
+            <button class="btn-apply">Apply Now</button>
+            <button class="btn-skip">Skip</button>
+          </div>
+        </div>
+
+        <div class="ipo-card normal">
+          <div class="ipo-info">
+            <div class="ipo-name">NMB Microfinance Bittiya Sanstha</div>
+            <div class="ipo-meta">
+              <span class="badge badge-info">IPO</span>
+              <span class="badge badge-neutral">Microfinance</span>
+              <span class="ipo-countdown normal">5 days left</span>
+            </div>
+          </div>
+          <div class="ipo-right">
+            <div class="ipo-price">
+              <div class="price-val">Rs. 100</div>
+              <div class="price-label">per share · min 10</div>
+            </div>
+            <button class="btn-apply">Apply Now</button>
+            <button class="btn-skip">Skip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <div class="section-title">Account Health</div>
+        <div style="font-size:11px;color:#6B7280;cursor:pointer;color:#F5A623;">Re-check all</div>
+      </div>
+      <div class="health-row">
+        <div class="health-card">
+          <div class="health-dot" style="background:#22C55E"></div>
+          <div>
+            <div class="health-name">Prakash</div>
+            <div style="font-size:10px;color:#6B7280;">DP 13200XXX</div>
+          </div>
+          <div class="health-info">OK · 2m ago</div>
+        </div>
+        <div class="health-card">
+          <div class="health-dot" style="background:#22C55E"></div>
+          <div>
+            <div class="health-name">Family 1</div>
+            <div style="font-size:10px;color:#6B7280;">DP 13200YYY</div>
+          </div>
+          <div class="health-info">OK · 2m ago</div>
+        </div>
+        <div class="health-card">
+          <div class="health-dot" style="background:#EF4444"></div>
+          <div>
+            <div class="health-name">Family 2</div>
+            <div style="font-size:10px;color:#6B7280;">DP 13200ZZZ</div>
+          </div>
+          <div class="health-info" style="color:#EF4444">Login fail</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+sqlmodel
+cryptography
+requests
+pydantic
+beautifulsoup4
