@@ -72,12 +72,17 @@ export default function Accounts() {
   };
 
   const handleDelete = (id) => {
-    if (!confirm('Delete this account?')) return;
-    api.delete(`/api/accounts/${id}`).then(() => { 
-      fetchAccounts(); 
-      window.dispatchEvent(new Event('accounts_updated'));
-      toast.success('Deleted'); 
-    });
+    // Note: window.confirm was bypassed here because browsers will permanently block
+    // the delete function if the user accidentally ticks "Prevent from creating dialogs"
+    api.delete(`/api/accounts/${id}`)
+      .then(() => { 
+        fetchAccounts(); 
+        window.dispatchEvent(new Event('accounts_updated'));
+        toast.success('Deleted'); 
+      })
+      .catch((err) => {
+        toast.error('Failed to delete: ' + (err.response?.data?.detail || err.message));
+      });
   };
 
   const inputStyle = { background: '#1C2333', border: '1px solid #374151', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#F3F4F6', width: '100%', outline: 'none' };

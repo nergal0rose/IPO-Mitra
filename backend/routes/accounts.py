@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlmodel import Session, select
 from typing import List
 from database import get_session
-from models import Account
+from models import Account, Application, Portfolio
 from crypto import encrypt, decrypt
 from pydantic import BaseModel
 from meroshare_api import MeroShareAPI
@@ -145,9 +145,21 @@ def delete_account(
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
     
-    session.delete(account)
-    session.commit()
-    return {"status": "deleted"}
+    try:
+        apps = session.exec(select(Application).where(Application.account_id == account_id)).all()
+        for app in apps:
+            session.delete(app)
+            
+        ports = session.exec(select(Portfolio).where(Portfolio.account_id == account_id)).all()
+        for p in ports:
+            session.delete(p)
+        
+        session.delete(account)
+        session.commit()
+        return {"status": "deleted"}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f"Database error: {str(e)}")
 
 @router.patch("/{account_id}/toggle-active", response_model=AccountResponse)
 def toggle_active(
