@@ -9,7 +9,7 @@ function ProgressRow({ result, index }) {
   const isSuccess = result.status === 'SUCCESS';
   const isFailed = result.status === 'FAILED';
   const Icon = isSuccess ? CheckCircle : isFailed ? XCircle : Minus;
-  const iconColor = isSuccess ? '#22C55E' : isFailed ? '#EF4444' : '#6B7280';
+  const iconColor = isSuccess ? '#22C55E' : isFailed ? '#EF4444' : 'rgba(255, 255, 255, 0.8)';
   const label = isSuccess ? `Applied — ${result.kitta || 10} kitta` : isFailed ? `Failed: ${result.message || 'Unknown'}` : 'Skipped';
 
   return (
@@ -18,11 +18,11 @@ function ProgressRow({ result, index }) {
       padding: '10px 14px', borderBottom: '1px solid #1F2937',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: '#6B7280', width: 16, flexShrink: 0 }}>{index + 1}</span>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: 'rgba(255, 255, 255, 0.8)', width: 16, flexShrink: 0 }}>{index + 1}</span>
         <div className="status-swap"><Icon style={{ width: 14, height: 14, color: iconColor }} /></div>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: '#F3F4F6' }} className="truncate">{result.account}</div>
-          <div style={{ fontSize: 10, color: '#6B7280' }} className="truncate">{result.company}</div>
+          <div style={{ fontSize: 10, color: 'rgba(255, 255, 255, 0.8)' }} className="truncate">{result.company}</div>
         </div>
       </div>
       <StatusBadge status={result.status} />
@@ -77,10 +77,10 @@ export default function Apply() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 16, fontWeight: 600, color: '#F3F4F6' }}>Apply IPO</div>
-          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>Select IPOs and accounts to bulk apply</div>
+          <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginTop: 2 }}>Select IPOs and accounts to bulk apply</div>
         </div>
         <button onClick={fetchData} disabled={fetching}
-          className="btn" style={{ padding: '7px 14px', borderRadius: 7, fontSize: 12, fontWeight: 500, background: 'transparent', border: '1px solid #374151', color: '#9CA3AF', cursor: 'pointer' }}>
+          className="btn" style={{ padding: '7px 14px', borderRadius: 7, fontSize: 12, fontWeight: 500, background: 'transparent', border: '1px solid #374151', color: 'rgba(255, 255, 255, 0.8)', cursor: 'pointer' }}>
           ↻ Refresh
         </button>
       </div>
@@ -88,7 +88,7 @@ export default function Apply() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* IPO Selector */}
         <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 10, padding: '14px' }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
             Available IPOs
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -110,7 +110,7 @@ export default function Apply() {
                 }}>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 500, color: '#F3F4F6' }}>{ipo.companyName}</div>
-                    <div style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>
+                    <div style={{ fontSize: 10, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>
                       {ipo.shareTypeName} · min {ipo.minUnit || 10}
                     </div>
                   </div>
@@ -124,7 +124,7 @@ export default function Apply() {
               );
             })}
             {!fetching && unionIpos.length === 0 && (
-              <div style={{ padding: '24px 12px', textAlign: 'center', fontSize: 11, color: '#6B7280', border: '1px dashed #1F2937', borderRadius: 8 }}>
+              <div style={{ padding: '24px 12px', textAlign: 'center', fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', border: '1px dashed #1F2937', borderRadius: 8 }}>
                 No applicable IPOs found.
               </div>
             )}
@@ -133,7 +133,7 @@ export default function Apply() {
 
         {/* Account Selector */}
         <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 10, padding: '14px' }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
             Target Accounts
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -148,11 +148,11 @@ export default function Apply() {
                 }}>
                   <div style={{
                     width: 24, height: 24, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 600, background: active ? '#22C55E' : '#1C2333', color: active ? '#000' : '#6B7280',
+                    fontSize: 11, fontWeight: 600, background: active ? '#22C55E' : '#1C2333', color: active ? '#000' : 'rgba(255, 255, 255, 0.8)',
                   }}>{acc.name.charAt(0)}</div>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 500, color: '#F3F4F6' }}>{acc.name}</div>
-                    <div style={{ fontSize: 10, color: '#6B7280', fontFamily: "'JetBrains Mono', monospace" }}>{acc.default_kitta}u</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255, 255, 255, 0.8)', fontFamily: "'JetBrains Mono', monospace" }}>{acc.default_kitta} Units</div>
                   </div>
                 </div>
               );
@@ -168,7 +168,7 @@ export default function Apply() {
       }}>
         <div>
           <div style={{ fontSize: 14, fontWeight: 500, color: '#F3F4F6' }}>Bulk Apply</div>
-          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginTop: 2 }}>
             <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{selectedIpos.size}</span> IPO(s) × <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{selectedAccounts.size}</span> acct = <span style={{ fontFamily: "'JetBrains Mono', monospace", color: '#F5A623', fontWeight: 600 }}>{selectedIpos.size * selectedAccounts.size}</span> applications
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function Apply() {
       {/* Results */}
       {results.length > 0 && (
         <div className="page-enter" style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 10, overflow: 'hidden' }}>
-          <div style={{ background: '#1C2333', borderBottom: '1px solid #374151', padding: '10px 14px', fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ background: '#1C2333', borderBottom: '1px solid #374151', padding: '10px 14px', fontSize: 11, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Results
           </div>
           {results.map((r, i) => <ProgressRow key={i} result={r} index={i} />)}

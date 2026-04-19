@@ -22,7 +22,7 @@ export default function CountdownTimer({ targetDate }) {
     return <span className="font-mono text-xs text-[#6B7280]">Closed</span>;
   }
 
-  const urgentClass = isToday ? 'text-[#EF4444] countdown-urgent' : isTomorrow ? 'text-[#F59E0B]' : 'text-[#9CA3AF]';
+  const urgentClass = isToday ? 'text-[#EF4444] countdown-urgent' : isTomorrow ? 'text-[#F59E0B]' : 'text-[rgba(255, 255, 255, 0.8)]';
 
   return (
     <span className={`font-mono text-xs font-medium ${urgentClass}`}>

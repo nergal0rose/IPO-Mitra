@@ -16,35 +16,23 @@ class CheckRequest(BaseModel):
     account_id: Optional[int] = None
 
 @router.get("/issues")
-def get_recent_issues(
-    x_app_pin: str = Header(...),
-    session: Session = Depends(get_session)
-):
-    """Fetch the latest 20 IPO issues applied by the first active account to populate dropdowns"""
-    accounts = session.exec(select(Account).where(Account.active == True)).all()
-    if not accounts: return []
-    acc = accounts[0]
-    try:
-        pw = decrypt(x_app_pin, acc.password)
-        pin = decrypt(x_app_pin, acc.transaction_pin)
-        ms_api = MeroShareAPI(acc.dp_id, acc.username, pw, acc.crn, pin)
-        success, _ = ms_api.login()
-        if not success: return []
-        history = ms_api.get_application_status()
-        issues = []
-        seen = set()
-        for item in history[:20]:
-            cid = item.get("companyShareId")
-            if cid and cid not in seen:
-                seen.add(cid)
-                issues.append({
-                    "company_share_id": cid,
-                    "company_name": item.get("companyName", "Unknown"),
-                    "scrip": item.get("scrip", "")
-                })
-        return issues
-    except Exception:
-        return []
+def get_recent_issues(session: Session = Depends(get_session)):
+    """Fetch the latest IPO issues from local database history to populate dropdowns instantly"""
+    from models import Application
+    from sqlalchemy import desc
+    
+    # Get unique applications ordered by newest first
+    stmt = select(Application.company_share_id, Application.company_name).distinct().order_by(desc(Application.company_share_id)).limit(20)
+    results = session.exec(stmt).all()
+    
+    issues = []
+    for share_id, name in results:
+        issues.append({
+            "company_share_id": share_id,
+            "company_name": name,
+            "scrip": ""
+        })
+    return issues
 
 @router.post("/check")
 def bulk_check(

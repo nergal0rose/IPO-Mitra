@@ -54,7 +54,15 @@ class MeroShareAPI:
             if r.status_code == 200:
                 self.token = r.headers.get("Authorization")
                 return True, ""
-            return False, f"Login failed: {r.status_code}"
+            
+            err = f"HTTP {r.status_code}"
+            try:
+                err_data = r.json()
+                if "message" in err_data:
+                    err = err_data["message"]
+            except: pass
+            
+            return False, err
         except Exception as e:
             return False, str(e)
 
@@ -185,8 +193,12 @@ class MeroShareAPI:
                     return json.loads(res.stdout)
                 return {"status": "FAILED", "message": f"Browser process failed: {res.stderr[:200]}"}
 
-            # Map common errors
             err = r.text[:300]
+            try:
+                err_data = r.json()
+                if "message" in err_data:
+                    err = err_data["message"]
+            except: pass
             if "already" in err.lower(): return {"status": "FAILED", "message": "Already applied"}
             return {"status": "FAILED", "message": err}
         except Exception as e:

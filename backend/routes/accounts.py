@@ -49,6 +49,7 @@ class AccountCreate(BaseModel):
     transaction_pin: str
     default_kitta: int = 10
     group_label: str = "Family"
+    active: bool = True
 
 class AccountResponse(BaseModel):
     id: int
@@ -96,7 +97,7 @@ def create_account(
         transaction_pin=enc_pin,
         default_kitta=account_in.default_kitta,
         group_label=account_in.group_label,
-        active=True
+        active=account_in.active
     )
     session.add(account)
     session.commit()
@@ -128,6 +129,7 @@ def update_account(
     account.transaction_pin = enc_pin
     account.default_kitta = account_in.default_kitta
     account.group_label = account_in.group_label
+    account.active = account_in.active
     
     session.add(account)
     session.commit()
@@ -146,6 +148,20 @@ def delete_account(
     session.delete(account)
     session.commit()
     return {"status": "deleted"}
+
+@router.patch("/{account_id}/toggle-active", response_model=AccountResponse)
+def toggle_active(
+    account_id: int,
+    session: Session = Depends(get_session)
+):
+    account = session.get(Account, account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    account.active = not account.active
+    session.add(account)
+    session.commit()
+    session.refresh(account)
+    return account
 
 @router.post("/health-check")
 def health_check(
@@ -169,3 +185,26 @@ def health_check(
         except Exception as e:
             results.append({"id": acc.id, "name": acc.name, "status": "ERROR", "error": str(e)})
     return results
+
+@router.post("/{account_id}/health")
+def single_health_check(
+    account_id: int,
+    x_app_pin: str = Header(...),
+    session: Session = Depends(get_session)
+):
+    acc = session.get(Account, account_id)
+    if not acc:
+        raise HTTPException(status_code=404, detail="Account not found")
+    try:
+        pw = decrypt(x_app_pin, acc.password)
+        pin = decrypt(x_app_pin, acc.transaction_pin)
+        ms_api = MeroShareAPI(acc.dp_id, acc.username, pw, acc.crn, pin)
+        success, error_msg = ms_api.login()
+        return {
+            "id": acc.id,
+            "name": acc.name,
+            "status": "OK" if success else "FAILED",
+            "error": error_msg
+        }
+    except Exception as e:
+        return {"id": acc.id, "name": acc.name, "status": "ERROR", "error": str(e)}

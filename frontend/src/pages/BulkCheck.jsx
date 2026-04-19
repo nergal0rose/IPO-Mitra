@@ -44,12 +44,12 @@ export default function BulkCheck() {
     <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
         <div style={{ fontSize: 16, fontWeight: 600, color: '#F3F4F6' }}>Reports</div>
-        <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>Application status and allotment results</div>
+        <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginTop: 2 }}>Application status and allotment results</div>
       </div>
 
       {/* Recent mini cards */}
       <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 10, padding: '14px' }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+        <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
           Recent Applications
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
@@ -62,15 +62,15 @@ export default function BulkCheck() {
           {!initLoading && history.map((app, i) => (
             <div key={i} style={{ background: '#1C2333', borderRadius: 8, padding: '10px', border: '1px solid #1F2937' }}>
               <div style={{ fontSize: 11, fontWeight: 500, color: '#F3F4F6', marginBottom: 2 }} className="truncate">{app.company_name}</div>
-              <div style={{ fontSize: 10, color: '#6B7280', marginBottom: 6 }} className="truncate">{app.account_name}</div>
+              <div style={{ fontSize: 10, color: 'rgba(255, 255, 255, 0.8)', marginBottom: 6 }} className="truncate">{app.account_name}</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 500, color: '#9CA3AF' }}>{app.applied_kitta}u</span>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)' }}>{app.applied_kitta} Units</span>
                 <StatusBadge status={app.status || (app.allotted_kitta > 0 ? 'ALLOTTED' : 'PENDING')} />
               </div>
             </div>
           ))}
           {!initLoading && history.length === 0 && (
-            <div className="col-span-full" style={{ textAlign: 'center', padding: '16px', fontSize: 11, color: '#6B7280' }}>No history yet.</div>
+            <div className="col-span-full" style={{ textAlign: 'center', padding: '16px', fontSize: 11, color: 'rgba(255, 255, 255, 0.8)' }}>No history yet.</div>
           )}
         </div>
       </div>
@@ -79,14 +79,14 @@ export default function BulkCheck() {
       <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 10, padding: '14px' }}
         className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
         <div>
-          <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 5 }}>IPO Filter</div>
+          <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginBottom: 5 }}>IPO Filter</div>
           <select value={selectedIssue} onChange={e => setSelectedIssue(e.target.value)} style={selectStyle}>
             <option value="ALL">All Recent IPOs</option>
             {issues.map(i => <option key={i.company_share_id} value={i.company_share_id}>{i.company_name}</option>)}
           </select>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 5 }}>Account Filter</div>
+          <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginBottom: 5 }}>Account Filter</div>
           <select value={selectedAccount} onChange={e => setSelectedAccount(e.target.value)} style={selectStyle}>
             <option value="ALL">All Accounts</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -105,7 +105,7 @@ export default function BulkCheck() {
       {/* Results table */}
       {results && (
         <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Live Results
           </div>
           {results.map((acc, i) => (
@@ -118,11 +118,11 @@ export default function BulkCheck() {
 
               {/* Table header */}
               <div className="hidden sm:grid grid-cols-12 gap-1" style={{ background: '#1C2333', borderBottom: '1px solid #374151', padding: '8px 14px' }}>
-                <div className="col-span-5" style={{ fontSize: 10, fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Company</div>
-                <div className="col-span-1" style={{ fontSize: 10, fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Scrip</div>
-                <div className="col-span-2 text-right" style={{ fontSize: 10, fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Applied</div>
-                <div className="col-span-2 text-right" style={{ fontSize: 10, fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Allotted</div>
-                <div className="col-span-2 text-right" style={{ fontSize: 10, fontWeight: 500, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Status</div>
+                <div className="col-span-5" style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Company</div>
+                <div className="col-span-1" style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Scrip</div>
+                <div className="col-span-2 text-right" style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Applied</div>
+                <div className="col-span-2 text-right" style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Allotted</div>
+                <div className="col-span-2 text-right" style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Status</div>
               </div>
 
               {/* Data rows */}
@@ -132,16 +132,16 @@ export default function BulkCheck() {
                   onMouseEnter={e => e.currentTarget.style.background = '#1C2333'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                   <div className="sm:col-span-5" style={{ fontSize: 12, color: '#F3F4F6' }}>{app.company_name}</div>
-                  <div className="sm:col-span-1" style={{ fontSize: 10, color: '#6B7280', fontFamily: "'JetBrains Mono', monospace" }}>{app.scrip}</div>
+                  <div className="sm:col-span-1" style={{ fontSize: 10, color: 'rgba(255, 255, 255, 0.8)', fontFamily: "'JetBrains Mono', monospace" }}>{app.scrip}</div>
                   <div className="sm:col-span-2 sm:text-right" style={{ fontSize: 12, fontWeight: 500, fontFamily: "'JetBrains Mono', monospace", color: '#F3F4F6' }}>{app.applied_kitta}</div>
-                  <div className="sm:col-span-2 sm:text-right" style={{ fontSize: 12, fontWeight: 500, fontFamily: "'JetBrains Mono', monospace", color: app.allotted_kitta > 0 ? '#22C55E' : '#6B7280' }}>
+                  <div className="sm:col-span-2 sm:text-right" style={{ fontSize: 12, fontWeight: 500, fontFamily: "'JetBrains Mono', monospace", color: app.allotted_kitta > 0 ? '#22C55E' : 'rgba(255, 255, 255, 0.8)' }}>
                     {app.allotted_kitta > 0 ? app.allotted_kitta : '—'}
                   </div>
                   <div className="sm:col-span-2 sm:text-right"><StatusBadge status={app.status} /></div>
                 </div>
               ))}
               {acc.applications.length === 0 && (
-                <div style={{ padding: '24px 14px', textAlign: 'center', fontSize: 11, color: '#6B7280' }}>No applications found.</div>
+                <div style={{ padding: '24px 14px', textAlign: 'center', fontSize: 11, color: 'rgba(255, 255, 255, 0.8)' }}>No applications found.</div>
               )}
             </div>
           ))}
