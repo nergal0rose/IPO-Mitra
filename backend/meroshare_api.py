@@ -51,6 +51,8 @@ class MeroShareAPI:
         }
         try:
             r = requests.post(url, json=payload, headers=HEADERS_BASE, timeout=15)
+            print(f"LOGIN ATTEMPT: {self.username} @ {self.dp_id}")
+            print(f"LOGIN RESPONSE [{r.status_code}]: {r.text[:200]}")
             if r.status_code == 200:
                 self.token = r.headers.get("Authorization")
                 return True, ""
@@ -64,6 +66,7 @@ class MeroShareAPI:
             
             return False, err
         except Exception as e:
+            print(f"LOGIN EXCEPTION: {e}")
             return False, str(e)
 
     def get_own_detail(self) -> dict | None:
@@ -234,3 +237,5 @@ class MeroShareAPI:
                 return self._safe_json(r)
         except: pass
         return {}
+
+

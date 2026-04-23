@@ -144,3 +144,51 @@ def get_open_ipos():
     except Exception as e:
         print("CDSC Scrape Error:", e)
         return []
+
+@router.get("/calendar")
+def get_upcoming_ipos():
+    import re
+    url = "https://www.sharesansar.com/upcoming-issue"
+    headers = {"User-Agent": "Mozilla/5.0", "X-Requested-With": "XMLHttpRequest"}
+    upcoming = []
+    
+    type_mapping = {
+        1: "IPO", 
+        2: "FPO", 
+        3: "Right Share", 
+        4: "Mutual Fund",
+        5: "IPO (Local)",
+        7: "Bonds/Debentures"
+    }
+    
+    for type_id, type_name in type_mapping.items():
+        try:
+            r = requests.get(url, params={"type": type_id, "draw": 1, "start": 0, "length": 50}, headers=headers, timeout=10)
+            data = r.json().get("data", [])
+            for item in data:
+                company = ""
+                symbol = ""
+                # Parse deeply nested HTML <a> tags in JSON
+                if isinstance(item.get("company"), dict):
+                    raw_name = item["company"].get("companyname", "")
+                    company = re.sub(r'<[^>]*>', '', raw_name)
+                    raw_sym = item["company"].get("symbol", "")
+                    symbol = re.sub(r'<[^>]*>', '', raw_sym)
+
+                share_type = type_name
+                
+                upcoming.append({
+                    "id": item.get("companyid", ""),
+                    "companyName": company.strip() if company else item.get("company", ""),
+                    "symbol": symbol.strip(),
+                    "totalUnits": item.get("total_units", ""),
+                    "amount": item.get("amount", ""),
+                    "applicationDate": item.get("application_date", ""),
+                    "sebonApprovalDate": item.get("date_sebon", ""),
+                    "issueManager": item.get("issue_manager", ""),
+                    "shareType": share_type
+                })
+        except Exception as e:
+            print(f"Error scraping upcoming type {type_id}:", e)
+            
+    return upcoming

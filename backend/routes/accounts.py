@@ -30,7 +30,7 @@ def resolve_dp_id(raw_dp: str) -> str:
             for cap in capitals:
                 code = str(cap.get("code", ""))
                 # If exact match or trailing match
-                if code == raw_dp or code.endswith(raw_dp):
+                if code == raw_dp or raw_dp.endswith(code):
                     res = str(cap.get("id"))
                     print("RESOLVED TO:", res)
                     return res
@@ -103,6 +103,69 @@ def create_account(
     session.commit()
     session.refresh(account)
     return account
+
+@router.post("/change-pin")
+def change_pin(
+    payload: dict,
+    session: Session = Depends(get_session)
+):
+    old_pin = payload.get("old_pin")
+    new_pin = payload.get("new_pin")
+    if not old_pin or not new_pin:
+        raise HTTPException(status_code=400, detail="Missing pins")
+        
+    accounts = session.exec(select(Account)).all()
+    # verify first
+    for acc in accounts:
+        try:
+            decrypt(old_pin, acc.password)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Incorrect current PIN. Decryption failed.")
+            
+    # now re-encrypt
+    for acc in accounts:
+        raw_pw = decrypt(old_pin, acc.password)
+        raw_tx = decrypt(old_pin, acc.transaction_pin)
+        acc.password = encrypt(new_pin, raw_pw)
+        acc.transaction_pin = encrypt(new_pin, raw_tx)
+        session.add(acc)
+    session.commit()
+    return {"status": "success"}
+
+@router.post("/verify-pin")
+def verify_pin(
+    payload: dict,
+    session: Session = Depends(get_session)
+):
+    pin = payload.get("pin")
+    if not pin or len(str(pin)) != 4 or not str(pin).isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be exactly 4 digits")
+        
+    acc = session.exec(select(Account).limit(1)).first()
+    if not acc:
+        return {"status": "ok"}
+        
+    try:
+        decrypt(pin, acc.password)
+        return {"status": "ok"}
+    except Exception:
+        raise HTTPException(status_code=401, detail="Incorrect PIN")
+
+@router.delete("/wipe")
+def wipe_all(session: Session = Depends(get_session)):
+    try:
+        session.exec(select(Application)).all() # check
+        apps = session.exec(select(Application)).all()
+        for a in apps: session.delete(a)
+        ports = session.exec(select(Portfolio)).all()
+        for p in ports: session.delete(p)
+        accs = session.exec(select(Account)).all()
+        for c in accs: session.delete(c)
+        session.commit()
+        return {"status": "success"}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/{account_id}", response_model=AccountResponse)
 def update_account(
@@ -220,3 +283,4 @@ def single_health_check(
         }
     except Exception as e:
         return {"id": acc.id, "name": acc.name, "status": "ERROR", "error": str(e)}
+
