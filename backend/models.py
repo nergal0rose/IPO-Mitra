@@ -15,6 +15,7 @@ class Account(SQLModel, table=True):
     default_kitta: int = Field(default=10)
     group_label: str = Field(default="Family")
     active: bool = Field(default=True)
+    is_primary: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class Application(SQLModel, table=True):

@@ -50,6 +50,7 @@ class AccountCreate(BaseModel):
     default_kitta: int = 10
     group_label: str = "Family"
     active: bool = True
+    is_primary: bool = False
 
 class AccountResponse(BaseModel):
     id: int
@@ -60,6 +61,7 @@ class AccountResponse(BaseModel):
     default_kitta: int
     group_label: str
     active: bool
+    is_primary: bool
 
 @router.get("/capitals")
 def get_capitals():
@@ -97,7 +99,8 @@ def create_account(
         transaction_pin=enc_pin,
         default_kitta=account_in.default_kitta,
         group_label=account_in.group_label,
-        active=account_in.active
+        active=account_in.active,
+        is_primary=account_in.is_primary
     )
     session.add(account)
     session.commit()
@@ -193,6 +196,7 @@ def update_account(
     account.default_kitta = account_in.default_kitta
     account.group_label = account_in.group_label
     account.active = account_in.active
+    account.is_primary = account_in.is_primary
     
     session.add(account)
     session.commit()
@@ -284,3 +288,28 @@ def single_health_check(
     except Exception as e:
         return {"id": acc.id, "name": acc.name, "status": "ERROR", "error": str(e)}
 
+@router.patch("/{account_id}/set-primary", response_model=AccountResponse)
+def set_primary(
+    account_id: int,
+    session: Session = Depends(get_session)
+):
+    account = session.get(Account, account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    
+    was_primary = account.is_primary
+    
+    # Reset all accounts
+    all_accounts = session.exec(select(Account)).all()
+    for acc in all_accounts:
+        acc.is_primary = False
+        session.add(acc)
+    
+    # Toggle primary for this account
+    if not was_primary:
+        account.is_primary = True
+        session.add(account)
+        
+    session.commit()
+    session.refresh(account)
+    return account

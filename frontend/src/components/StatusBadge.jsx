@@ -3,12 +3,12 @@
  * border-radius: 99px, padding: 2px 8px, DM Sans 500 11px uppercase tracking-wide
  */
 const variants = {
-  success:  'bg-[rgba(34,197,94,0.12)] text-[#22C55E] border-[rgba(34,197,94,0.2)]',
-  warning:  'bg-[rgba(245,158,11,0.12)] text-[#F59E0B] border-[rgba(245,158,11,0.2)]',
-  error:    'bg-[rgba(239,68,68,0.12)] text-[#EF4444] border-[rgba(239,68,68,0.2)]',
+  success:  'bg-[rgba(34,197,94,0.12)] text-[var(--status-success)] border-[rgba(34,197,94,0.2)]',
+  warning:  'bg-[rgba(245,158,11,0.12)] text-[var(--status-warning)] border-[rgba(245,158,11,0.2)]',
+  error:    'bg-[rgba(239,68,68,0.12)] text-[var(--status-error)] border-[rgba(239,68,68,0.2)]',
   info:     'bg-[rgba(59,130,246,0.12)] text-[#3B82F6] border-[rgba(59,130,246,0.2)]',
   neutral:  'bg-[rgba(107,114,128,0.12)] text-[#6B7280] border-[rgba(107,114,128,0.2)]',
-  accent:   'bg-[rgba(245,166,35,0.12)] text-[#F5A623] border-[rgba(245,166,35,0.2)]',
+  accent:   'bg-[rgba(245,166,35,0.12)] text-[var(--accent-primary)] border-[rgba(245,166,35,0.2)]',
 };
 
 const statusMap = {

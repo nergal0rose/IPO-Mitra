@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
-import { UserPlus, Trash2, Edit2, Activity, X } from 'lucide-react';
-import StatusBadge from '../components/StatusBadge';
+import { UserPlus, Trash2, Edit2, Activity, X, ShieldCheck, Star } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 export default function Accounts() {
@@ -17,7 +16,10 @@ export default function Accounts() {
 
   const fetchAccounts = () => {
     setLoading(true);
-    api.get('/api/accounts/').then(r => setAccounts(r.data)).catch(() => toast.error('Failed to load accounts')).finally(() => setLoading(false));
+    api.get('/api/accounts/')
+      .then(r => setAccounts(r.data))
+      .catch(() => toast.error('Failed to load accounts'))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -58,6 +60,13 @@ export default function Accounts() {
     });
   };
 
+  const togglePrimary = (id) => {
+    api.patch(`/api/accounts/${id}/set-primary`).then(() => {
+      fetchAccounts();
+      window.dispatchEvent(new Event('accounts_updated'));
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
@@ -72,144 +81,203 @@ export default function Accounts() {
   };
 
   const handleDelete = (id) => {
-    // Note: window.confirm was bypassed here because browsers will permanently block
-    // the delete function if the user accidentally ticks "Prevent from creating dialogs"
+    if (!window.confirm('Delete this account permanently?')) return;
     api.delete(`/api/accounts/${id}`)
       .then(() => { 
         fetchAccounts(); 
         window.dispatchEvent(new Event('accounts_updated'));
         toast.success('Deleted'); 
       })
-      .catch((err) => {
-        toast.error('Failed to delete: ' + (err.response?.data?.detail || err.message));
-      });
+      .catch(() => toast.error('Failed to delete'));
   };
 
-  const inputStyle = { background: '#1C2333', border: '1px solid #374151', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#F3F4F6', width: '100%', outline: 'none' };
+  const inputStyle = { 
+    background: '#F9FAFB', 
+    border: '1px solid #E4E4E7', 
+    borderRadius: 10, 
+    padding: '10px 14px', 
+    fontSize: 13, 
+    color: '#000', 
+    width: '100%', 
+    outline: 'none',
+    transition: 'border-color 0.2s'
+  };
 
   return (
-    <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: '#F3F4F6' }}>Accounts</div>
-          <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginTop: 2 }}>Manage your MeroShare family accounts</div>
+          <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#000', marginBottom: '6px', letterSpacing: '-0.04em' }}>Family Accounts</h1>
+          <p style={{ fontSize: '15px', color: 'var(--text-secondary)', fontWeight: 500 }}>Manage and monitor your automated account suite</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: '16px' }}>
           <button onClick={handleHealthCheck} disabled={checkingHealth}
-            className="btn" style={{ padding: '7px 14px', borderRadius: 7, fontSize: 12, fontWeight: 500, background: 'transparent', border: '1px solid #374151', color: 'rgba(255, 255, 255, 0.8)', cursor: 'pointer' }}>
-            <Activity style={{ width: 13, height: 13, display: 'inline', marginRight: 4, verticalAlign: -2 }} className={checkingHealth ? 'animate-spin' : ''} />
+            style={{ 
+              padding: '12px 20px', borderRadius: '16px', fontSize: '14px', fontWeight: 700, 
+              background: '#FFF', border: '1px solid #E4E4E7', color: '#000', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '10px', boxShadow: 'var(--shadow-sm)'
+            }} className="btn-premium">
+            <Activity size={18} className={checkingHealth ? 'animate-spin' : ''} />
             Health Check
           </button>
           <button onClick={() => { setEditing(null); setShowForm(true); }}
-            className="btn" style={{ padding: '7px 14px', borderRadius: 7, fontSize: 12, fontWeight: 500, background: '#F5A623', color: '#000', border: 'none', cursor: 'pointer' }}>
+            style={{ 
+              padding: '12px 24px', borderRadius: '16px', fontSize: '14px', fontWeight: 800, 
+              background: '#000', color: '#FFF', border: 'none', cursor: 'pointer',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+            }} className="btn-premium">
             + Add Account
           </button>
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form Overlay */}
       {showForm && (
-        <div className="page-enter" style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 10, padding: '16px 14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontSize: 14, fontWeight: 500 }}>{editing ? 'Edit Account' : 'Add Account'}</div>
-            <button onClick={() => setShowForm(false)} style={{ color: 'rgba(255, 255, 255, 0.8)', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="page-enter" style={{ background: '#FFF', borderRadius: '32px', padding: '36px', width: '100%', maxWidth: 580, boxShadow: '0 24px 48px rgba(0,0,0,0.15)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#000', letterSpacing: '-0.02em' }}>{editing ? 'Edit Account' : 'Connect New Account'}</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>Link your MeroShare credentials securely</p>
+              </div>
+              <button onClick={() => setShowForm(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F9FAFB', border: 'none', color: '#A1A1AA', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[
+                { name: 'name', label: 'Display Name', placeholder: 'e.g. My Account', defaultValue: editing?.name },
+                { name: 'username', label: 'Username', placeholder: 'ID Number', defaultValue: editing?.username },
+                { name: 'password', label: 'Password', placeholder: '••••••••', type: 'password', required: !editing },
+                { name: 'crn', label: 'CRN', placeholder: 'Bank CRN', defaultValue: editing?.crn },
+                { name: 'transaction_pin', label: 'Transaction PIN', placeholder: '4 digits', type: 'password', required: !editing },
+                { name: 'default_kitta', label: 'Default Units', placeholder: '10', type: 'number', defaultValue: editing?.default_kitta || 10 },
+              ].map(f => (
+                <div key={f.name}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#000', marginBottom: '8px', display: 'block' }}>{f.label}</label>
+                  <input name={f.name} type={f.type || 'text'} placeholder={f.placeholder} defaultValue={f.defaultValue}
+                    required={f.required !== false} style={inputStyle} />
+                </div>
+              ))}
+              <div className="md:col-span-2">
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#000', marginBottom: '8px', display: 'block' }}>Capital (DP)</label>
+                <select name="dp_id" defaultValue={editing?.dp_id} style={inputStyle}>
+                  {capitals.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="md:col-span-2 pt-6 flex gap-4">
+                <button type="submit" style={{ flex: 1, padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 800, background: '#000', color: '#FFF', border: 'none', cursor: 'pointer' }} className="btn-premium">
+                  {editing ? 'Update Account' : 'Connect Account'}
+                </button>
+                <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 800, background: '#F8F9FB', border: '1px solid #E4E4E7', color: '#000', cursor: 'pointer' }} className="btn-premium">Cancel</button>
+              </div>
+            </form>
           </div>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { name: 'name', label: 'Account Name', placeholder: 'e.g. Rasmita', defaultValue: editing?.name },
-              { name: 'username', label: 'Username', placeholder: 'MeroShare ID', defaultValue: editing?.username },
-              { name: 'password', label: 'Password', placeholder: '••••••••', type: 'password', required: !editing },
-              { name: 'crn', label: 'CRN Number', placeholder: 'CRN', defaultValue: editing?.crn },
-              { name: 'transaction_pin', label: 'Transaction PIN', placeholder: '4 digits', type: 'password', required: !editing },
-              { name: 'default_kitta', label: 'Default Kitta', placeholder: '10', type: 'number', defaultValue: editing?.default_kitta || 10 },
-            ].map(f => (
-              <div key={f.name}>
-                <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginBottom: 5 }}>{f.label}</div>
-                <input name={f.name} type={f.type || 'text'} placeholder={f.placeholder} defaultValue={f.defaultValue}
-                  required={f.required !== false} style={inputStyle} />
-              </div>
-            ))}
-            <div>
-              <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.8)', marginBottom: 5 }}>Capital (DP)</div>
-              <select name="dp_id" defaultValue={editing?.dp_id} style={inputStyle}>
-                {capitals.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <input type="hidden" name="group_label" value="Family" />
-            <div className="lg:col-span-3 pt-2 flex gap-2">
-              <button type="submit" className="btn" style={{ padding: '7px 14px', borderRadius: 7, fontSize: 12, fontWeight: 500, background: '#F5A623', color: '#000', border: 'none', cursor: 'pointer' }}>
-                {editing ? 'Update' : 'Save'}
-              </button>
-              <button type="button" onClick={() => setShowForm(false)} className="btn" style={{ padding: '7px 14px', borderRadius: 7, fontSize: 12, fontWeight: 500, background: 'transparent', border: '1px solid #374151', color: 'rgba(255, 255, 255, 0.8)', cursor: 'pointer' }}>Cancel</button>
-            </div>
-          </form>
         </div>
       )}
 
-      {/* Account cards — matching mockup health-card style */}
-      {loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-          {[1,2,3].map(i => (
-            <div key={i} style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 9, padding: '10px 12px' }}>
-              <div className="skeleton" style={{ width: '60%', height: 14, borderRadius: 4, marginBottom: 6 }} />
-              <div className="skeleton" style={{ width: '40%', height: 10, borderRadius: 4 }} />
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Account Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          [1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 180, borderRadius: '24px' }} />)
+        ) : (
+          accounts.map(acc => {
+            const hs = healthStatus[acc.id];
+            const isOk = !hs || hs.status === 'OK';
+            return (
+              <div key={acc.id} style={{ 
+                background: '#FFF', borderRadius: '24px', padding: '24px', border: '1px solid #F1F1F4',
+                boxShadow: 'var(--shadow-sm)', position: 'relative',
+                display: 'flex', flexDirection: 'column', gap: '16px', transition: 'transform 0.2s'
+              }} className="clickable-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{ 
+                      width: '48px', height: '48px', borderRadius: '50%', 
+                      background: acc.active ? 'rgba(16,185,129,0.1)' : '#F3F4F6',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      color: acc.active ? '#047857' : '#9CA3AF',
+                      fontSize: '18px', fontWeight: 800, textTransform: 'uppercase',
+                      flexShrink: 0, position: 'relative'
+                    }}>
+                      {acc.name.charAt(0)}
+                      <div style={{
+                        position: 'absolute', bottom: -1, right: -1, width: 18, height: 18, borderRadius: '50%',
+                        background: acc.active ? '#10B981' : '#EF4444', border: '2px solid #FFF',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        {acc.active ? <ShieldCheck size={11} color="#FFF" /> : <X size={11} color="#FFF" />}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ fontSize: '16px', fontWeight: 800, color: '#000', letterSpacing: '-0.01em' }}>{acc.name}</div>
+                        {acc.is_primary && (
+                          <div style={{ background: '#000', color: '#FFF', fontSize: '8px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Primary</div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: 500 }}>{acc.username}</div>
+                    </div>
+                  </div>
+                  <button onClick={() => toggleActive(acc.id)} style={{ 
+                    fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', 
+                    background: acc.active ? '#FFF' : '#000', color: acc.active ? '#EF4444' : '#FFF',
+                    border: acc.active ? '1px solid #FEE2E2' : 'none', cursor: 'pointer', textTransform: 'uppercase'
+                  }} className="btn-premium">
+                    {acc.active ? 'Disable' : 'Enable'}
+                  </button>
+                </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(accounts.length || 1, 3)}, 1fr)`, gap: 8 }}>
-        {accounts.map(acc => {
-          const hs = healthStatus[acc.id];
-          const isOk = !hs || hs.status === 'OK';
-          return (
-            <div key={acc.id} className="card" style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 9, padding: '12px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: acc.active ? (hs ? (isOk ? '#22C55E' : '#EF4444') : '#22C55E') : '#EF4444', flexShrink: 0 }} />
-                <div style={{ fontSize: 13, fontWeight: 500, flex: 1, color: '#F3F4F6', opacity: acc.active ? 1 : 0.5 }}>{acc.name}</div>
-                <button onClick={() => toggleActive(acc.id)} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, border: `1px solid ${acc.active ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`, color: acc.active ? '#EF4444' : '#22C55E', background: 'transparent', cursor: 'pointer' }}>
-                  {acc.active ? 'Disable' : 'Enable'}
-                </button>
-                {hs && <StatusBadge label={isOk ? 'OK' : 'Fail'} variant={isOk ? 'success' : 'error'} />}
-              </div>
-              <div style={{ fontSize: 10, color: 'rgba(255, 255, 255, 0.8)', fontFamily: "'JetBrains Mono', monospace", marginBottom: 3 }}>
-                {acc.username}
-              </div>
-              <div style={{ fontSize: 10, color: 'rgba(255, 255, 255, 0.8)', marginBottom: 8 }}>
-                Default: <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{acc.default_kitta}</span> kitta
-              </div>
-              {hs && !isOk && hs.error && (
-                <div style={{ fontSize: 11, color: '#F87171', marginBottom: 8, padding: '6px 8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 6, border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                  ⚠️ {hs.error}
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '1px solid #F9FAFB' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: '#A1A1AA', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>Units</div>
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: '#000' }}>{acc.default_kitta}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: '#A1A1AA', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>Status</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'flex-end' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: isOk ? '#10B981' : '#EF4444' }} />
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: isOk ? '#059669' : '#DC2626' }}>{isOk ? 'Healthy' : 'Error'}</span>
+                    </div>
+                  </div>
                 </div>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #1F2937', paddingTop: 8 }}>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => handleSingleCheck(acc.id)} disabled={checkingSingle[acc.id]}
-                    style={{ fontSize: 11, color: '#3B82F6', background: 'none', border: 'none', cursor: checkingSingle[acc.id] ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 3, opacity: checkingSingle[acc.id] ? 0.5 : 1 }}>
-                    <Activity size={11} className={checkingSingle[acc.id] ? 'animate-spin' : ''} /> Check
-                  </button>
-                  <button onClick={() => { setEditing(acc); setShowForm(true); }}
-                    style={{ fontSize: 11, color: '#F5A623', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <Edit2 size={11} /> Edit
+
+                <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: '8px' }}>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button onClick={() => handleSingleCheck(acc.id)} disabled={checkingSingle[acc.id]}
+                      style={{ padding: '8px 12px', borderRadius: '10px', background: '#F8F9FB', border: '1px solid #E4E4E7', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#000' }}
+                      className="icon-btn">
+                      <Activity size={14} className={checkingSingle[acc.id] ? 'animate-spin' : ''} /> Check
+                    </button>
+                    <button onClick={() => { setEditing(acc); setShowForm(true); }}
+                      style={{ padding: '8px 12px', borderRadius: '10px', background: '#F8F9FB', border: '1px solid #E4E4E7', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#000' }}
+                      className="icon-btn">
+                      <Edit2 size={14} /> Edit
+                    </button>
+                    <button onClick={() => togglePrimary(acc.id)}
+                      style={{ padding: '8px', borderRadius: '10px', background: acc.is_primary ? 'var(--accent-primary)' : '#F8F9FB', border: '1px solid #E4E4E7', color: acc.is_primary ? '#FFF' : '#A1A1AA' }}
+                      className="icon-btn"
+                      title={acc.is_primary ? "Unset Primary" : "Set as Primary"}>
+                      <Star size={14} fill={acc.is_primary ? "#FFF" : "none"} />
+                    </button>
+                  </div>
+                  <button onClick={() => handleDelete(acc.id)}
+                    style={{ padding: '6px', color: '#EF4444', background: 'none', border: 'none' }}
+                    className="trash-btn">
+                    <Trash2 size={18} />
                   </button>
                 </div>
-                <button onClick={() => handleDelete(acc.id)}
-                  style={{ color: '#EF4444', opacity: 0.5, background: 'none', border: 'none', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                  onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>
-                  <Trash2 size={13} />
-                </button>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {!loading && accounts.length === 0 && (
-        <div style={{ background: '#111827', border: '1px dashed #1F2937', borderRadius: 10, padding: '32px 14px', textAlign: 'center' }}>
-          <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.8)' }}>No accounts yet. Add your MeroShare family accounts to get started.</div>
+        <div style={{ background: '#FFF', border: '2px dashed #E4E4E7', borderRadius: 20, padding: '48px 24px', textAlign: 'center' }}>
+          <UserPlus size={40} style={{ color: '#A1A1AA', marginBottom: 12 }} />
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#000', marginBottom: 3 }}>No accounts linked</div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>Add your family accounts to start automation</div>
+          <button onClick={() => setShowForm(true)} style={{ padding: '10px 20px', borderRadius: 10, background: '#000', color: '#FFF', fontWeight: 700, border: 'none', cursor: 'pointer' }} className="btn-premium">Connect First Account</button>
         </div>
       )}
     </div>

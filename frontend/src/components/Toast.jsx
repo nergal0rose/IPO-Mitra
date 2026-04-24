@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext } from 'react';
+import { useState, useCallback, useMemo, createContext, useContext } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 /**
@@ -11,24 +11,14 @@ import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 const ToastContext = createContext(null);
 
 const variantConfig = {
-  success: { border: 'border-l-[#22C55E]', icon: CheckCircle, iconColor: 'text-[#22C55E]' },
-  error:   { border: 'border-l-[#EF4444]', icon: XCircle,    iconColor: 'text-[#EF4444]' },
-  warning: { border: 'border-l-[#F59E0B]', icon: AlertTriangle, iconColor: 'text-[#F59E0B]' },
+  success: { border: 'border-l-[var(--status-success)]', icon: CheckCircle, iconColor: 'text-[var(--status-success)]' },
+  error:   { border: 'border-l-[var(--status-error)]', icon: XCircle,    iconColor: 'text-[var(--status-error)]' },
+  warning: { border: 'border-l-[var(--status-warning)]', icon: AlertTriangle, iconColor: 'text-[var(--status-warning)]' },
   info:    { border: 'border-l-[#3B82F6]', icon: Info,        iconColor: 'text-[#3B82F6]' },
 };
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-
-  const addToast = useCallback((message, variant = 'info') => {
-    const id = Date.now() + Math.random();
-    setToasts(prev => [...prev.slice(-2), { id, message, variant, exiting: false }]);
-
-    // Auto-dismiss (errors stay until manually dismissed)
-    if (variant !== 'error') {
-      setTimeout(() => dismissToast(id), 5000);
-    }
-  }, []);
 
   const dismissToast = useCallback((id) => {
     setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
@@ -37,25 +27,34 @@ export function ToastProvider({ children }) {
     }, 150);
   }, []);
 
-  const toast = useCallback({
+  const addToast = useCallback((message, variant = 'info') => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev.slice(-2), { id, message, variant, exiting: false }]);
+    // Auto-dismiss (errors stay until manually dismissed)
+    if (variant !== 'error') {
+      setTimeout(() => dismissToast(id), 5000);
+    }
+  }, [dismissToast]);
+
+  const toast = useMemo(() => ({
     success: (msg) => addToast(msg, 'success'),
     error:   (msg) => addToast(msg, 'error'),
     warning: (msg) => addToast(msg, 'warning'),
     info:    (msg) => addToast(msg, 'info'),
-  }, [addToast]);
+  }), [addToast]);
 
   return (
     <ToastContext.Provider value={toast}>
       {children}
       {/* Toast Container — top-right, 16px from edges */}
-      <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-[360px] w-full pointer-events-none">
+      <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-[360px] w-full pointer-events-none">
         {toasts.map(t => {
           const cfg = variantConfig[t.variant] || variantConfig.info;
           const Icon = cfg.icon;
           return (
             <div
               key={t.id}
-              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-lg border-l-[3px] ${cfg.border} bg-[var(--bg-elevated)] shadow-lg shadow-black/30 transition-all duration-200 ${
+              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-lg border-l-[3px] ${cfg.border} bg-white shadow-lg shadow-black/30 transition-all duration-200 ${
                 t.exiting ? 'opacity-0 translate-x-full' : 'opacity-100 translate-x-0 animate-[slideInRight_200ms_ease-out]'
               }`}
             >
