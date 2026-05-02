@@ -19,3 +19,14 @@ meroshare.db
 # OS
 .DS_Store
 Thumbs.db
+
+# Debug & Test Scripts
+backend/test_*.py
+backend/debug_*.py
+backend/*.png
+backend/*.html
+backend/*.js
+backend/*.txt
+check_accounts.py
+test_status.py
+*.sqlite
