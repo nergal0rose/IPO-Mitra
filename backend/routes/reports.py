@@ -21,7 +21,7 @@ class ReportItem(BaseModel):
     status: str
     applied_at: datetime | str
 
-@router.get("/sync", response_model=Dict[str, Any])
+@router.post("/sync", response_model=Dict[str, Any])
 def sync_reports(
     x_app_pin: str = Header(...),
     session: Session = Depends(get_session)
@@ -39,7 +39,7 @@ def sync_reports(
         try:
             pw = decrypt(x_app_pin, acc.password)
             pin = decrypt(x_app_pin, acc.transaction_pin)
-            ms_api = MeroShareAPI(acc.dp_id, acc.username, pw, acc.crn, pin)
+            ms_api = MeroShareAPI(acc.dp_id, acc.username, pw, acc.crn, pin, bank_name=acc.bank_name)
             success, err = ms_api.login()
             
             if not success:

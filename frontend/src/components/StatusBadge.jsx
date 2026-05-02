@@ -12,13 +12,19 @@ const variants = {
 };
 
 const statusMap = {
-  ALLOTTED:     { variant: 'success',  label: 'Allotted' },
-  NOT_ALLOTTED: { variant: 'error',    label: 'Not Allotted' },
-  PENDING:      { variant: 'warning',  label: 'Pending' },
-  FAILED:       { variant: 'error',    label: 'Failed' },
-  SUCCESS:      { variant: 'success',  label: 'Applied' },
-  DRY_RUN:      { variant: 'info',     label: 'Dry Run' },
-  SKIPPED:      { variant: 'neutral',  label: 'Skipped' },
+  ALLOTTED:        { variant: 'success',  label: 'Allotted' },
+  NOT_ALLOTTED:    { variant: 'error',    label: 'Not Allotted' },
+  PENDING:         { variant: 'warning',  label: 'Pending' },
+  FAILED:          { variant: 'error',    label: 'Failed' },
+  SUCCESS:         { variant: 'success',  label: 'Applied' },
+  ALREADY_APPLIED: { variant: 'warning',  label: 'Already Applied' },
+  DRY_RUN:         { variant: 'info',     label: 'Dry Run' },
+  SKIPPED:         { variant: 'neutral',  label: 'Skipped' },
+  // Native MeroShare statuses mapped to user-friendly terms
+  APPROVED:        { variant: 'success',  label: 'Applied' },
+  VERIFIED:        { variant: 'success',  label: 'Applied' },
+  UNVERIFIED:      { variant: 'warning',  label: 'Pending' },
+  REJECTED:        { variant: 'error',    label: 'Failed' },
 };
 
 export default function StatusBadge({ status, label, variant }) {

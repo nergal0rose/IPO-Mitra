@@ -1,12 +1,10 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import asyncio
-import json
-import sys
 from playwright.async_api import async_playwright
 import sqlite3
 from crypto import decrypt
-import os
-
-sys.path.insert(0, os.path.dirname(__file__))
 
 async def intercept_apply(dp_id, username, password, crn, pin):
     async with async_playwright() as p:
@@ -20,7 +18,6 @@ async def intercept_apply(dp_id, username, password, crn, pin):
             if "applicantForm" in request.url and request.method == "POST":
                 print("\n" + "="*50)
                 print(f"INTERCEPTED {request.method} {request.url}")
-                print(f"Payload: {request.post_data}")
                 print("="*50 + "\n")
 
         page.on("request", handle_request)
@@ -42,25 +39,17 @@ async def intercept_apply(dp_id, username, password, crn, pin):
             await page.fill("input[name='password']", password)
             await page.click("button[type='submit']")
             
-            await asyncio.sleep(5)
-            await page.screenshot(path="debug_login.png")
-            
             print("Going to My ASBA...")
-            await page.goto("https://meroshare.cdsc.com.np/#/asba")
             await asyncio.sleep(5)
-            await page.screenshot(path="debug_asba.png")
+            await page.goto("https://meroshare.cdsc.com.np/#/asba")
+            await page.wait_for_selector(".company-list", timeout=30000)
             
-            print("Clicking Apply for Buddhabhumi (if any open)...")
-            # We just click the first available Apply button
             apply_btns = page.locator("button.btn-issue:has-text('Apply')")
             if await apply_btns.count() > 0:
                 await apply_btns.first.click()
             else:
                 print("No Apply buttons found! Exiting.")
                 return
-            
-            await asyncio.sleep(5)
-            await page.screenshot(path="debug_form.png")
             
             await page.select_option("select[name='bank']", index=1)
             await page.fill("input[name='appliedKitta']", "10")
@@ -69,9 +58,7 @@ async def intercept_apply(dp_id, username, password, crn, pin):
             await page.check("input#disclaimer")
             await page.click("button:has-text('Proceed')")
             
-            await asyncio.sleep(3)
-            await page.screenshot(path="debug_pin.png")
-            
+            await asyncio.sleep(2)
             await page.fill("input[name='transactionPin']", pin)
             
             print("Submitting...")
@@ -80,14 +67,14 @@ async def intercept_apply(dp_id, username, password, crn, pin):
             await asyncio.sleep(5)
         except Exception as e:
             print(f"Error: {e}")
-            await page.screenshot(path="debug_error.png")
         finally:
             await browser.close()
 
 if __name__ == "__main__":
     PIN = input("PIN: ").strip()
     conn = sqlite3.connect("meroshare.db")
-    row = conn.execute("SELECT dp_id, username, password, crn, transaction_pin FROM accounts WHERE id=2").fetchone()
+    # Manoj is id=4
+    row = conn.execute("SELECT dp_id, username, password, crn, transaction_pin FROM accounts WHERE id=4").fetchone()
     dp_id, username, enc_pw, crn, enc_pin = row
     pw = decrypt(PIN, enc_pw)
     pin = decrypt(PIN, enc_pin)

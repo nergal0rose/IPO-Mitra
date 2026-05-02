@@ -16,6 +16,8 @@ class Account(SQLModel, table=True):
     group_label: str = Field(default="Family")
     active: bool = Field(default=True)
     is_primary: bool = Field(default=False)
+    bank_id: Optional[int] = Field(default=None)
+    bank_name: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class Application(SQLModel, table=True):

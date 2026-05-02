@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
 from database import get_session
 from models import Account, Application, Portfolio
 from crypto import encrypt, decrypt
@@ -52,6 +52,20 @@ class AccountCreate(BaseModel):
     active: bool = True
     is_primary: bool = False
 
+class AccountUpdate(BaseModel):
+    name: str
+    dp_id: str
+    username: str
+    password: str = ""
+    crn: str
+    transaction_pin: str = ""
+    default_kitta: int = 10
+    group_label: str = "Family"
+    active: bool = True
+    is_primary: bool = False
+    bank_id: int = None
+    bank_name: str = ""
+
 class AccountResponse(BaseModel):
     id: int
     name: str
@@ -62,6 +76,8 @@ class AccountResponse(BaseModel):
     group_label: str
     active: bool
     is_primary: bool
+    bank_id: Optional[int] = None
+    bank_name: Optional[str] = None
 
 @router.get("/capitals")
 def get_capitals():
@@ -72,6 +88,57 @@ def get_capitals():
     except Exception:
         pass
     return []
+
+@router.get("/all-banks")
+def get_all_banks():
+    """Full C-ASBA bank list from MeroShare. Matched by name at apply time."""
+    return [
+        {"name": "Agriculture Development Bank Ltd."},
+        {"name": "Best Finance Company Ltd."},
+        {"name": "Central Finance Ltd."},
+        {"name": "Citizens Bank International Ltd."},
+        {"name": "Everest Bank Ltd."},
+        {"name": "Excel Development Bank Ltd."},
+        {"name": "Garima Bikas Bank Ltd."},
+        {"name": "Global IME Bank Ltd."},
+        {"name": "Goodwill Finance Ltd."},
+        {"name": "Green Development Bank Ltd."},
+        {"name": "Guheshwori Merchant Banking Finance Ltd."},
+        {"name": "Gurkhas Finance Ltd."},
+        {"name": "Himalayan Bank Ltd."},
+        {"name": "ICFC Finance Ltd."},
+        {"name": "Jyoti Bikash Bank Ltd."},
+        {"name": "Kamana Sewa Bikas Bank Ltd."},
+        {"name": "Kumari Bank Ltd."},
+        {"name": "LAXMI SUNRISE BANK LIMITED."},
+        {"name": "Lumbini Bikas Bank Ltd."},
+        {"name": "Machhapuchhre Bank Ltd."},
+        {"name": "Mahalaxmi Bikas Bank Limited."},
+        {"name": "Manjushree Financial Institution Ltd."},
+        {"name": "Muktinath Bikas Bank Ltd."},
+        {"name": "Nabil Bank Ltd."},
+        {"name": "Nepal Bank Ltd."},
+        {"name": "Nepal Investment Mega Bank Ltd."},
+        {"name": "Nepal SBI Bank Ltd."},
+        {"name": "NIC Asia Bank Ltd."},
+        {"name": "NMB Bank Ltd."},
+        {"name": "Pokhara Finance Ltd."},
+        {"name": "Prabhu Bank Ltd."},
+        {"name": "Prime Commercial Bank Ltd."},
+        {"name": "Progressive Finance Co. Ltd."},
+        {"name": "Rastriya Banijya Bank Ltd."},
+        {"name": "Reliance Finance Ltd."},
+        {"name": "Sanima Bank Ltd."},
+        {"name": "Saptakoshi Development Bank Ltd."},
+        {"name": "Shangri-la Development Bank Ltd."},
+        {"name": "Shine Resunga Development Bank Ltd."},
+        {"name": "Shree Investment & Finance Co. Ltd."},
+        {"name": "Siddhartha Bank Ltd."},
+        {"name": "Sindhu Bikash Bank Ltd."},
+        {"name": "Standard Chartered Bank Nepal Ltd."},
+    ]
+
+
 
 @router.get("/", response_model=List[AccountResponse])
 def get_accounts(session: Session = Depends(get_session)):
@@ -173,7 +240,7 @@ def wipe_all(session: Session = Depends(get_session)):
 @router.put("/{account_id}", response_model=AccountResponse)
 def update_account(
     account_id: int,
-    account_in: AccountCreate,
+    account_in: AccountUpdate,
     x_app_pin: str = Header(...),
     session: Session = Depends(get_session)
 ):
@@ -181,22 +248,30 @@ def update_account(
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    try:
-        enc_password = encrypt(x_app_pin, account_in.password)
-        enc_pin = encrypt(x_app_pin, account_in.transaction_pin)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Encryption failed. Invalid PIN?")
+    if account_in.password:
+        try:
+            account.password = encrypt(x_app_pin, account_in.password)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Encryption failed. Invalid PIN?")
+            
+    if account_in.transaction_pin:
+        try:
+            account.transaction_pin = encrypt(x_app_pin, account_in.transaction_pin)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Encryption failed. Invalid PIN?")
 
     account.name = account_in.name
     account.dp_id = resolve_dp_id(account_in.dp_id)
     account.username = account_in.username
-    account.password = enc_password
     account.crn = account_in.crn
-    account.transaction_pin = enc_pin
     account.default_kitta = account_in.default_kitta
     account.group_label = account_in.group_label
     account.active = account_in.active
     account.is_primary = account_in.is_primary
+    if account_in.bank_id:
+        account.bank_id = account_in.bank_id
+    if account_in.bank_name:
+        account.bank_name = account_in.bank_name
     
     session.add(account)
     session.commit()
@@ -264,6 +339,56 @@ def health_check(
         except Exception as e:
             results.append({"id": acc.id, "name": acc.name, "status": "ERROR", "error": str(e)})
     return results
+
+@router.get("/{account_id}/bank-detail")
+def get_account_bank_detail(
+    account_id: int,
+    x_app_pin: str = Header(...),
+    session: Session = Depends(get_session)
+):
+    acc = session.get(Account, account_id)
+    if not acc:
+        raise HTTPException(status_code=404, detail="Account not found")
+    try:
+        pw = decrypt(x_app_pin, acc.password)
+        pin = decrypt(x_app_pin, acc.transaction_pin)
+        ms = MeroShareAPI(acc.dp_id, acc.username, pw, acc.crn, pin)
+        ms.login()
+        ms.get_bank_detail()
+        if ms.bank_id is None:
+            return {"bank": None}
+        # Fetch the bank name from the capital list
+        import requests as req
+        banks_r = req.get("https://webbackend.cdsc.com.np/api/meroShare/bank/", headers=ms._headers(), timeout=10)
+        banks = banks_r.json() if banks_r.status_code == 200 else []
+        bank_name = next((b.get("name") for b in banks if b.get("id") == ms.bank_id), f"Bank {ms.bank_id}")
+        return {
+            "bank": {
+                "bankId": ms.bank_id,
+                "bankName": bank_name,
+                "accountNumber": ms.bank_account_number,
+                "branchId": ms.account_branch_id,
+                "accountTypeId": ms.account_type_id,
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/{account_id}/secrets")
+def get_account_secrets(
+    account_id: int,
+    x_app_pin: str = Header(...),
+    session: Session = Depends(get_session)
+):
+    acc = session.get(Account, account_id)
+    if not acc:
+        raise HTTPException(status_code=404, detail="Account not found")
+    try:
+        pw = decrypt(x_app_pin, acc.password)
+        pin = decrypt(x_app_pin, acc.transaction_pin)
+        return {"password": pw, "transaction_pin": pin}
+    except Exception:
+        raise HTTPException(status_code=401, detail="Incorrect PIN")
 
 @router.post("/{account_id}/health")
 def single_health_check(

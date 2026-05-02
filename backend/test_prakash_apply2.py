@@ -6,7 +6,7 @@ import sqlite3
 
 PIN = input("PIN: ").strip()
 conn = sqlite3.connect("meroshare.db")
-row = conn.execute("SELECT dp_id, username, password, crn, transaction_pin, default_kitta FROM accounts WHERE id=3").fetchone()
+row = conn.execute("SELECT dp_id, username, password, crn, transaction_pin, default_kitta FROM accounts WHERE id=2").fetchone()
 dp_id, username, enc_pw, crn, enc_pin, kitta = row
 pw = decrypt(PIN, enc_pw)
 pin = decrypt(PIN, enc_pin)
@@ -23,7 +23,7 @@ payload = {
     "appliedKitta": str(kitta),
     "bankId": ms.bank_id,
     "boid": ms.own_detail.get("boid"),
-    "companyShareId": 768, # Buddhabhumi
+    "companyShareId": 778, # Yambaling
     "crnNumber": crn,
     "customerId": ms.own_detail.get("id"),
     "demat": ms.own_detail.get("demat"),
@@ -31,6 +31,6 @@ payload = {
 }
 
 headers = {**HEADERS_BASE, "Authorization": ms.token}
-r = requests.post(f"{BASE_URL}/applicantForm/share/apply", json=payload, headers=headers, timeout=15)
-print(f"Status: {r.status_code}")
-print(r.text)
+r2 = requests.post(f"{BASE_URL}/applicantForm/share/apply", json=payload, headers=headers, timeout=15)
+print(f"Status: {r2.status_code}")
+print(r2.text[:500])

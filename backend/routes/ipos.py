@@ -31,41 +31,15 @@ def get_applicable_ipos(
             ms_api = MeroShareAPI(acc.dp_id, acc.username, pw, acc.crn, pin)
             success, login_err = ms_api.login()
             if success:
-                # Fetch both regular applicable AND active (already applied/editable) ones
+                # Fetch applicable IPOs (POST /companyShare/applicableIssue/)
                 issues = ms_api.get_applicable_ipos()
-                active_entries = ms_api.get_active_applicable_ipos()
                 
-                # Combine them
-                all_raw_issues = []
-                if isinstance(issues, list): all_raw_issues.extend(issues)
-                
-                # Active entries have a slightly different structure (companyShare nested)
-                if isinstance(active_entries, list):
-                    for entry in active_entries:
-                        cs = entry.get("companyShare", {})
-                        if cs:
-                            # Map to the format we expect
-                            c_name = cs.get("companyIssue", {}).get("companyISIN", {}).get("company", {}).get("name")
-                            if not c_name:
-                                c_name = cs.get("companyName")
-                            
-                            all_raw_issues.append({
-                                "companyShareId": cs.get("id"),
-                                "companyName": c_name,
-                                "issueCloseDate": cs.get("issueCloseDate"),
-                                "issueOpenDate": cs.get("issueOpenDate"),
-                                "shareTypeName": cs.get("shareTypeName"),
-                                "minUnit": cs.get("minUnit"),
-                                "maxUnit": cs.get("maxUnit"),
-                                "sharePrice": cs.get("sharePrice"),
-                                "accountBranchId": entry.get("accountBranchId")
-                            })
-
-                for issue in all_raw_issues:
+                for issue in issues:
                     issue_id = issue.get("companyShareId")
                     if issue_id and issue_id not in seen_ids:
                         applicable_ipos.append({
                             "id": issue_id,
+                            "companyShareId": issue_id,
                             "companyName": issue.get("companyName"),
                             "closeDate": issue.get("issueCloseDate"),
                             "openDate": issue.get("issueOpenDate"),
@@ -73,9 +47,12 @@ def get_applicable_ipos(
                             "minUnit": issue.get("minUnit"),
                             "maxUnit": issue.get("maxUnit"),
                             "sharePrice": issue.get("sharePrice"),
-                            "accountBranchId": issue.get("accountBranchId")
+                            "scrip": issue.get("scrip"),
+                            "subGroup": issue.get("subGroup"),
                         })
                         seen_ids.add(issue_id)
+                # Only need first successful account to discover IPOs
+                break
             else:
                 errors.append(f"{acc.name}: Login failed - {login_err}")
         except Exception as e:
@@ -83,17 +60,6 @@ def get_applicable_ipos(
             print(f"Error for {acc.name}: {repr(e)}")
             errors.append(err_msg)
             continue
-            
-    if not applicable_ipos:
-        # Fallback to public list if we couldn't fetch from accounts (e.g. WAF rejection)
-        # This ensuring Sopan is displayed
-        public_list = get_open_ipos()
-        for p_ipo in public_list:
-            if "SOPAN" in p_ipo["companyName"].upper():
-                 # Hardcode Sopan ID (770) if we couldn't get it from API
-                 # MeroShare ID for SOPAN is 770
-                 p_ipo["id"] = 770
-            applicable_ipos.append(p_ipo)
 
     return applicable_ipos
 

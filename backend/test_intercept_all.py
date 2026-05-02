@@ -12,16 +12,13 @@ async def intercept_apply(dp_id, username, password, crn, pin):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         )
         page = await context.new_page()
 
         async def handle_request(request):
-            if "applicantForm" in request.url and request.method == "POST":
-                print("\n" + "="*50)
-                print(f"INTERCEPTED {request.method} {request.url}")
-                print(f"Payload: {request.post_data}")
-                print("="*50 + "\n")
+            if "cdsc.com.np" in request.url and "api" in request.url and request.method != "OPTIONS":
+                print(f"[{request.method}] {request.url}")
 
         page.on("request", handle_request)
 
@@ -42,52 +39,54 @@ async def intercept_apply(dp_id, username, password, crn, pin):
             await page.fill("input[name='password']", password)
             await page.click("button[type='submit']")
             
-            await asyncio.sleep(5)
-            await page.screenshot(path="debug_login.png")
+            print("Waiting for dashboard...")
+            await asyncio.sleep(3)
             
             print("Going to My ASBA...")
             await page.goto("https://meroshare.cdsc.com.np/#/asba")
-            await asyncio.sleep(5)
-            await page.screenshot(path="debug_asba.png")
+            await asyncio.sleep(4)
             
-            print("Clicking Apply for Buddhabhumi (if any open)...")
-            # We just click the first available Apply button
+            # Click Apply for Buddhabhumi (768) if available
             apply_btns = page.locator("button.btn-issue:has-text('Apply')")
             if await apply_btns.count() > 0:
+                print("Clicking Apply on first available IPO...")
                 await apply_btns.first.click()
             else:
                 print("No Apply buttons found! Exiting.")
                 return
             
-            await asyncio.sleep(5)
-            await page.screenshot(path="debug_form.png")
-            
+            await asyncio.sleep(3)
+            print("Selecting Bank...")
             await page.select_option("select[name='bank']", index=1)
+            
+            await asyncio.sleep(1)
+            print("Filling Kitta and CRN...")
             await page.fill("input[name='appliedKitta']", "10")
             await page.fill("input[name='crnNumber']", crn)
             
+            await asyncio.sleep(1)
+            print("Clicking Proceed...")
             await page.check("input#disclaimer")
             await page.click("button:has-text('Proceed')")
             
-            await asyncio.sleep(3)
-            await page.screenshot(path="debug_pin.png")
-            
+            await asyncio.sleep(2)
+            print("Entering PIN...")
             await page.fill("input[name='transactionPin']", pin)
             
             print("Submitting...")
-            await page.click("button:has-text('Apply')")
-            
-            await asyncio.sleep(5)
+            # We won't actually click submit so we don't apply, but we saw everything before it.
+            # wait a bit to let requests finish
+            await asyncio.sleep(3)
         except Exception as e:
             print(f"Error: {e}")
-            await page.screenshot(path="debug_error.png")
         finally:
             await browser.close()
 
 if __name__ == "__main__":
     PIN = input("PIN: ").strip()
     conn = sqlite3.connect("meroshare.db")
-    row = conn.execute("SELECT dp_id, username, password, crn, transaction_pin FROM accounts WHERE id=2").fetchone()
+    # Govinda is id=3
+    row = conn.execute("SELECT dp_id, username, password, crn, transaction_pin FROM accounts WHERE id=3").fetchone()
     dp_id, username, enc_pw, crn, enc_pin = row
     pw = decrypt(PIN, enc_pw)
     pin = decrypt(PIN, enc_pin)

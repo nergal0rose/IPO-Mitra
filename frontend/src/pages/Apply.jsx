@@ -7,8 +7,9 @@ import { useToast } from '../components/Toast';
 function ProgressRow({ result, index }) {
   const isSuccess = result.status === 'SUCCESS';
   const isFailed = result.status === 'FAILED';
-  const Icon = isSuccess ? CheckCircle : isFailed ? XCircle : Minus;
-  const iconColor = isSuccess ? '#10B981' : isFailed ? '#EF4444' : '#A1A1AA';
+  const isAlready = result.status === 'ALREADY_APPLIED';
+  const Icon = isSuccess ? CheckCircle : isFailed ? XCircle : isAlready ? Minus : Minus;
+  const iconColor = isSuccess ? '#10B981' : isFailed ? '#EF4444' : isAlready ? '#F59E0B' : '#A1A1AA';
   
   return (
     <div className="progress-row-enter" style={{
@@ -18,7 +19,8 @@ function ProgressRow({ result, index }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: '13px', fontWeight: 800, color: '#A1A1AA', width: '24px' }}>{String(index + 1).padStart(2, '0')}</span>
         <div style={{ 
-          width: '40px', height: '40px', borderRadius: '12px', background: isSuccess ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+          width: '40px', height: '40px', borderRadius: '12px', 
+          background: isSuccess ? 'rgba(16,185,129,0.08)' : isAlready ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           <Icon style={{ width: '20px', height: '20px', color: iconColor }} strokeWidth={2.5} />
@@ -31,6 +33,7 @@ function ProgressRow({ result, index }) {
       <div style={{ textAlign: 'right' }}>
         <StatusBadge status={result.status} />
         {isSuccess && <div style={{ fontSize: '12px', fontWeight: 800, color: '#10B981', marginTop: '4px' }}>{result.kitta || 10} Units</div>}
+        {(isFailed || isAlready) && result.message && <div style={{ fontSize: '11px', fontWeight: 600, color: isAlready ? '#F59E0B' : '#EF4444', marginTop: '4px' }}>{result.message}</div>}
       </div>
     </div>
   );
@@ -65,8 +68,14 @@ export default function Apply({ globalAccounts, globalIpos, globalFetching }) {
       dry_run: false
     }).then(res => {
       setResults(res.data);
+      window.dispatchEvent(new CustomEvent('accounts_updated'));
       const ok = res.data.filter(r => r.status === 'SUCCESS').length;
-      toast.success(`Done: ${ok}/${res.data.length} applied`);
+      const already = res.data.filter(r => r.status === 'ALREADY_APPLIED').length;
+      if (already > 0) {
+        toast.success(`Done: ${ok} applied, ${already} already applied / ${res.data.length} total`);
+      } else {
+        toast.success(`Done: ${ok}/${res.data.length} applied`);
+      }
     }).catch(err => toast.error(err.response?.data?.detail || err.message)).finally(() => setApplying(false));
   };
 

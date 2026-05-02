@@ -64,7 +64,7 @@ async def apply_ipo_browser(dp_id, username, password, crn, pin, share_id, kitta
             await page.click(target_btn)
             
             # 4. Fill Application Form
-            await page.wait_for_selector("select[name='bank']")
+            await page.wait_for_selector("select[name='bank']", timeout=15000)
             
             # Select first bank branch (usually only one)
             await page.select_option("select[name='bank']", index=1)
@@ -82,7 +82,7 @@ async def apply_ipo_browser(dp_id, username, password, crn, pin, share_id, kitta
             await page.click("button:has-text('Proceed')")
             
             # 5. Transaction PIN
-            await page.wait_for_selector("input[name='transactionPin']")
+            await page.wait_for_selector("input[name='transactionPin']", timeout=15000)
             await page.fill("input[name='transactionPin']", pin)
             
             # Apply

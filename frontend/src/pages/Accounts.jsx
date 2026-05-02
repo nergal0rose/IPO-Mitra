@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
-import { UserPlus, Trash2, Edit2, Activity, X, ShieldCheck, Star } from 'lucide-react';
+import { UserPlus, Trash2, Edit2, Activity, X, ShieldCheck, Star, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 export default function Accounts() {
@@ -12,7 +12,11 @@ export default function Accounts() {
   const [checkingHealth, setCheckingHealth] = useState(false);
   const [checkingSingle, setCheckingSingle] = useState({});
   const [loading, setLoading] = useState(true);
+  const [showFields, setShowFields] = useState({});
+  const [editSecrets, setEditSecrets] = useState({});
+  const [banks, setBanks] = useState([]);
   const toast = useToast();
+  const toggleShow = (name) => setShowFields(prev => ({ ...prev, [name]: !prev[name] }));
 
   const fetchAccounts = () => {
     setLoading(true);
@@ -25,6 +29,7 @@ export default function Accounts() {
   useEffect(() => {
     fetchAccounts();
     api.get('/api/accounts/capitals').then(r => setCapitals(r.data)).catch(() => {});
+    api.get('/api/accounts/all-banks').then(r => setBanks(r.data)).catch(() => {});
   }, []);
 
   const handleHealthCheck = () => {
@@ -65,6 +70,16 @@ export default function Accounts() {
       fetchAccounts();
       window.dispatchEvent(new Event('accounts_updated'));
     });
+  };
+
+  const handleEdit = (acc) => {
+    setEditing(acc);
+    setEditSecrets({});
+    setShowFields({});
+    api.get(`/api/accounts/${acc.id}/secrets`)
+      .then(r => setEditSecrets(r.data))
+      .catch(() => {});
+    setShowForm(true);
   };
 
   const handleSubmit = (e) => {
@@ -147,21 +162,38 @@ export default function Accounts() {
               {[
                 { name: 'name', label: 'Display Name', placeholder: 'e.g. My Account', defaultValue: editing?.name },
                 { name: 'username', label: 'Username', placeholder: 'ID Number', defaultValue: editing?.username },
-                { name: 'password', label: 'Password', placeholder: '••••••••', type: 'password', required: !editing },
+                { name: 'password', label: 'Password', placeholder: '••••••••', type: 'password', required: !editing, defaultValue: editSecrets.password || '' },
                 { name: 'crn', label: 'CRN', placeholder: 'Bank CRN', defaultValue: editing?.crn },
-                { name: 'transaction_pin', label: 'Transaction PIN', placeholder: '4 digits', type: 'password', required: !editing },
+                { name: 'transaction_pin', label: 'Transaction PIN', placeholder: '••••••••', type: 'password', required: !editing, defaultValue: editSecrets.transaction_pin || '' },
                 { name: 'default_kitta', label: 'Default Units', placeholder: '10', type: 'number', defaultValue: editing?.default_kitta || 10 },
               ].map(f => (
                 <div key={f.name}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: '#000', marginBottom: '8px', display: 'block' }}>{f.label}</label>
-                  <input name={f.name} type={f.type || 'text'} placeholder={f.placeholder} defaultValue={f.defaultValue}
-                    required={f.required !== false} style={inputStyle} />
+                  <div style={{ position: 'relative' }}>
+                    <input name={f.name} type={f.type === 'password' && showFields[f.name] ? 'text' : (f.type || 'text')} placeholder={f.placeholder} defaultValue={f.defaultValue}
+                      required={f.required !== false} style={{ ...inputStyle, paddingRight: f.type === 'password' ? '36px' : inputStyle.paddingRight }} />
+                    {f.type === 'password' && (
+                      <button
+                        type="button"
+                        onClick={() => toggleShow(f.name)}
+                        style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#A1A1AA', cursor: 'pointer', display: 'flex' }}>
+                        {showFields[f.name] ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
               <div className="md:col-span-2">
                 <label style={{ fontSize: '12px', fontWeight: 700, color: '#000', marginBottom: '8px', display: 'block' }}>Capital (DP)</label>
                 <select name="dp_id" defaultValue={editing?.dp_id} style={inputStyle}>
                   {capitals.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#000', marginBottom: '8px', display: 'block' }}>Bank (C-ASBA)</label>
+                <select name="bank_name" defaultValue={editing?.bank_name || ''} style={inputStyle}>
+                  <option value="">Select Bank</option>
+                  {banks.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
                 </select>
               </div>
               <div className="md:col-span-2 pt-6 flex gap-4">
@@ -241,6 +273,17 @@ export default function Accounts() {
                   </div>
                 </div>
 
+                {/* Bank Row */}
+                {acc.bank_name ? (
+                  <div style={{ padding: '8px 12px', borderRadius: '12px', background: '#F9FAFB', border: '1px solid #F1F1F4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: '10px', fontWeight: 800, color: '#A1A1AA', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>Bank</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#000' }}>{acc.bank_name}</div>
+                    </div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, color: '#A1A1AA' }}>ID: {acc.bank_id}</div>
+                  </div>
+                ) : null}
+
                 <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: '8px' }}>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button onClick={() => handleSingleCheck(acc.id)} disabled={checkingSingle[acc.id]}
@@ -248,7 +291,7 @@ export default function Accounts() {
                       className="icon-btn">
                       <Activity size={14} className={checkingSingle[acc.id] ? 'animate-spin' : ''} /> Check
                     </button>
-                    <button onClick={() => { setEditing(acc); setShowForm(true); }}
+                    <button onClick={() => handleEdit(acc)}
                       style={{ padding: '8px 12px', borderRadius: '10px', background: '#F8F9FB', border: '1px solid #E4E4E7', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#000' }}
                       className="icon-btn">
                       <Edit2 size={14} /> Edit
