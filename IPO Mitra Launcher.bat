@@ -1,7 +1,7 @@
 @echo off
-title MeroShare Launcher
+title IPO Mitra Launcher
 echo ==================================================
-echo   Starting MeroShare Full-Stack Application
+echo   Starting IPO Mitra Full-Stack Application
 echo ==================================================
 echo.
 

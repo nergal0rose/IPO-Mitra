@@ -44,7 +44,7 @@
    
    Simply double-click or run:
    ```cmd
-   start.bat
+   "IPO Mitra Launcher.bat"
    ```
    
    This will:
@@ -73,7 +73,7 @@ IPO_Mitra/
 │   ├── src/               # React components, pages, and API hooks
 │   ├── package.json       # Node.js dependencies
 │   └── vite.config.js     # Vite configuration
-├── start.bat              # One-click launch script
+├── IPO Mitra Launcher.bat # One-click launch script
 └── stop.bat               # Teardown script
 ```
 
