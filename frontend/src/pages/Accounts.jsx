@@ -273,16 +273,7 @@ export default function Accounts() {
                   </div>
                 </div>
 
-                {/* Bank Row */}
-                {acc.bank_name ? (
-                  <div style={{ padding: '8px 12px', borderRadius: '12px', background: '#F9FAFB', border: '1px solid #F1F1F4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 800, color: '#A1A1AA', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>Bank</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#000' }}>{acc.bank_name}</div>
-                    </div>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: '#A1A1AA' }}>ID: {acc.bank_id}</div>
-                  </div>
-                ) : null}
+
 
                 <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: '8px' }}>
                   <div style={{ display: 'flex', gap: '6px' }}>

@@ -13,6 +13,7 @@ env/
 .env
 
 # Database
+*.sqlite
 *.sqlite3
 meroshare.db
 
@@ -20,13 +21,31 @@ meroshare.db
 .DS_Store
 Thumbs.db
 
-# Debug & Test Scripts
+# Debug, Test & Scratch Scripts
 backend/test_*.py
 backend/debug_*.py
+backend/probe_*.py
+backend/scratch*.py
+backend/*_test.py
+backend/download_js*.py
+backend/session_refresh.py
+backend/update_crn.py
+meroshare.py
+check_accounts.py
+test_status.py
+scheduler.py
+get_url.js
+ipo.sh
+
+# Logs and debug output
+*.log
 backend/*.png
 backend/*.html
 backend/*.js
 backend/*.txt
-check_accounts.py
-test_status.py
-*.sqlite
+login_debug.png
+meroshare_log.json
+meroshare_dashboard_mockup.html
+
+# Agent skills
+*_SKILL.md
