@@ -25,56 +25,50 @@
 * Lucide React (Icons)
 * Recharts (Data visualization)
 
-## ⚙️ Installation & Usage
+## ⚙️ Installation & Usage (End Users)
+
+IPO Mitra is now a fully standalone Desktop Application! You do **not** need to install Python, Node.js, or run any scripts manually.
+
+1. Go to the [Releases page](../../releases) on this GitHub repository.
+2. Download the latest `IPO Mitra Setup X.X.X.exe` file.
+3. Double-click the `.exe` to install it. It will automatically create a Desktop and Start Menu shortcut.
+4. Launch "IPO Mitra", add your MeroShare accounts, and start automating!
+
+*(Note: Windows SmartScreen may show a "Windows protected your PC" warning because this is a newly created app. Click "More info" and then "Run anyway" to proceed).*
+
+## 🛠️ Developer Setup (Building from source)
+
+If you want to modify the code and build your own installer:
 
 ### Prerequisites
-* Python 3.8+ installed and added to PATH.
+* Python 3.10+ installed and added to PATH.
 * Node.js (v18+) and npm installed.
 
-### Setup
-
+### Build Instructions
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/IPO_Mitra.git
-   cd IPO_Mitra
+   git clone https://github.com/nergal0rose/IPO-Mitra.git
+   cd IPO-Mitra
    ```
 
-2. **Launch the Application:**
-   IPO Mitra includes a convenient Windows batch script that automatically installs dependencies for both backend and frontend, and starts the servers in the background.
-   
-   Simply double-click or run:
+2. **Build the Desktop Application:**
+   Run the master build script which handles bundling the frontend, packaging the FastAPI backend with PyInstaller, and generating the NSIS installer via electron-builder:
    ```cmd
-   "IPO Mitra Launcher.bat"
+   .\build_electron.bat
    ```
-   
-   This will:
-   - Install Python requirements (`pip install -r backend/requirements.txt`)
-   - Install Node modules (`npm install` inside `frontend`)
-   - Start the FastAPI backend on `http://localhost:8000`
-   - Start the Vite React frontend on `http://localhost:5173`
-   - Automatically open the dashboard in your default web browser.
 
-3. **Stop the Application:**
-   To gracefully shut down the background servers, run:
-   ```cmd
-   stop.bat
-   ```
+3. **Output:**
+   The final executable will be located at `release/IPO Mitra Setup 1.0.0.exe`.
 
 ## 📁 Project Structure
 
-```
+```text
 IPO_Mitra/
-├── backend/               # FastAPI backend source code
-│   ├── main.py            # API entry point & routes registration
-│   ├── database.py        # SQLite database connection setup
-│   ├── routes/            # API endpoints (accounts, ipos, apply, reports)
-│   └── requirements.txt   # Python dependencies
-├── frontend/              # React/Vite frontend source code
-│   ├── src/               # React components, pages, and API hooks
-│   ├── package.json       # Node.js dependencies
-│   └── vite.config.js     # Vite configuration
-├── IPO Mitra Launcher.bat # One-click launch script
-└── stop.bat               # Teardown script
+├── backend/               # FastAPI backend source code (Python)
+├── frontend/              # React/Vite frontend source code (JavaScript)
+├── electron/              # Desktop wrapper and packaging config (Node.js)
+├── build_electron.bat     # Master build script for generating the installer
+└── icon.ico               # Application branding
 ```
 
 ## 🛡️ Privacy & Security
