@@ -202,6 +202,20 @@ def change_pin(
     session.commit()
     return {"status": "success"}
 
+@router.get("/check-setup")
+def check_setup(session: Session = Depends(get_session)):
+    acc = session.exec(select(Account).limit(1)).first()
+    return {"has_pin": acc is not None}
+
+@router.post("/set-pin")
+def set_pin(payload: dict):
+    # PIN is not stored globally, it is used as an encryption key.
+    # Just validate and acknowledge.
+    pin = payload.get("pin")
+    if not pin or len(str(pin)) != 4 or not str(pin).isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be 4 digits")
+    return {"status": "ok"}
+
 @router.post("/verify-pin")
 def verify_pin(
     payload: dict,

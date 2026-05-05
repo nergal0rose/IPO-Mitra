@@ -1,0 +1,50 @@
+{
+  "name": "ipo-mitra",
+  "version": "1.0.0",
+  "description": "IPO Mitra - MeroShare IPO Automation Desktop App",
+  "author": {
+    "name": "IPO Mitra"
+  },
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "fix-cache": "node fix-cache.js",
+    "dist": "node fix-cache.js && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.ipomitra.app",
+    "productName": "IPO Mitra",
+    "icon": "../icon.ico",
+    "directories": {
+      "output": "../release"
+    },
+    "extraResources": [
+      {
+        "from": "../backend/dist/IPO_Mitra",
+        "to": "backend",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../icon.ico",
+      "signDlls": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "IPO Mitra",
+      "installerIcon": "../icon.ico",
+      "uninstallerIcon": "../icon.ico",
+      "installerHeaderIcon": "../icon.ico",
+      "deleteAppDataOnUninstall": true
+    },
+    "forceCodeSigning": false
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}

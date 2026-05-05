@@ -149,17 +149,18 @@ export default function Accounts() {
 
       {/* Form Overlay */}
       {showForm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="page-enter" style={{ background: '#FFF', borderRadius: '32px', padding: '36px', width: '100%', maxWidth: 580, boxShadow: '0 24px 48px rgba(0,0,0,0.15)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(15, 23, 42, 0.65)' }}>
+          <div className="page-enter" style={{ background: '#FFF', borderRadius: '32px', width: '100%', maxWidth: 580, boxShadow: '0 24px 48px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+            <div style={{ padding: '32px 36px 0 36px', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
               <div>
                 <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#000', letterSpacing: '-0.02em' }}>{editing ? 'Edit Account' : 'Connect New Account'}</h3>
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>Link your MeroShare credentials securely</p>
               </div>
-              <button onClick={() => setShowForm(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F9FAFB', border: 'none', color: '#A1A1AA', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
+              <button onClick={() => setShowForm(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F9FAFB', border: 'none', color: '#A1A1AA', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {[
+            <div style={{ overflowY: 'auto', padding: '0 36px 36px 36px' }}>
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {[
                 { name: 'name', label: 'Display Name', placeholder: 'e.g. My Account', defaultValue: editing?.name },
                 { name: 'username', label: 'Username', placeholder: 'ID Number', defaultValue: editing?.username },
                 { name: 'password', label: 'Password', placeholder: '••••••••', type: 'password', required: !editing, defaultValue: editSecrets.password || '' },
@@ -203,6 +204,7 @@ export default function Accounts() {
                 <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 800, background: '#F8F9FB', border: '1px solid #E4E4E7', color: '#000', cursor: 'pointer' }} className="btn-premium">Cancel</button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

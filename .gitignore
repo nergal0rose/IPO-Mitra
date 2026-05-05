@@ -12,6 +12,15 @@ venv/
 env/
 .env
 
+# PyInstaller Build Artifacts
+backend/dist/
+backend/build/
+backend/static/
+*.spec
+
+# Electron Build Artifacts
+release/
+electron/dist/
 # Database
 *.sqlite
 *.sqlite3
