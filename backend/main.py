@@ -41,6 +41,18 @@ def on_startup():
 def health_check():
     return {"status": "ok"}
 
+@app.get("/api/debug/paths")
+def debug_paths():
+    from database import sqlite_file_name
+    return {
+        "data_dir": os.environ.get("IPO_MITRA_DATA_DIR", "(not set, using '.')"),
+        "db_path": os.path.abspath(sqlite_file_name),
+        "cwd": os.getcwd(),
+        "frozen": getattr(sys, 'frozen', False),
+        "exe_dir": os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else None,
+        "meipass": getattr(sys, '_MEIPASS', None),
+    }
+
 # Mount static files for frontend
 static_dir = get_static_dir()
 if os.path.exists(static_dir):

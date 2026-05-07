@@ -39,7 +39,7 @@
       "installerIcon": "../icon.ico",
       "uninstallerIcon": "../icon.ico",
       "installerHeaderIcon": "../icon.ico",
-      "deleteAppDataOnUninstall": true
+      "deleteAppDataOnUninstall": false
     },
     "forceCodeSigning": false
   },

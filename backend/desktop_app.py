@@ -8,23 +8,36 @@ import multiprocessing
 import traceback
 
 def get_data_dir():
-    """Writable directory next to the .exe for meroshare.db"""
-    if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
+    """
+    Persistent, writable data directory.
+    Priority: IPO_MITRA_DATA_DIR env var (set by Electron) > fallback to script dir (dev).
+    NEVER use sys.executable dir in frozen mode — that's inside resources/ and gets replaced on update.
+    """
+    env_dir = os.environ.get("IPO_MITRA_DATA_DIR")
+    if env_dir:
+        return env_dir
+    # Dev mode fallback
     return os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
 
     data_dir = get_data_dir()
-    os.chdir(data_dir)
+    os.makedirs(data_dir, exist_ok=True)
+
+    # Propagate to database.py so it uses the same directory
+    os.environ["IPO_MITRA_DATA_DIR"] = data_dir
 
     # Flush stdout so Electron can read backend output in real time
     sys.stdout.reconfigure(line_buffering=True)
     sys.stderr.reconfigure(line_buffering=True)
 
-    print(f"[desktop_app] CWD: {os.getcwd()}", flush=True)
-    print(f"[desktop_app] Frozen: {getattr(sys, 'frozen', False)}", flush=True)
+    print(f"[desktop_app] Data dir: {data_dir}", flush=True)
+    print(f"[desktop_app] DB path:  {os.path.join(data_dir, 'meroshare.db')}", flush=True)
+    print(f"[desktop_app] Frozen:   {getattr(sys, 'frozen', False)}", flush=True)
+    if getattr(sys, 'frozen', False):
+        print(f"[desktop_app] Exe dir:  {os.path.dirname(sys.executable)}", flush=True)
+        print(f"[desktop_app] MEIPASS:  {getattr(sys, '_MEIPASS', 'N/A')}", flush=True)
 
     try:
         from main import app
@@ -34,7 +47,6 @@ if __name__ == "__main__":
     except Exception:
         err = traceback.format_exc()
         print(f"[desktop_app] CRASH:\n{err}", flush=True)
-        # Also write to crash log next to exe
         try:
             with open(os.path.join(data_dir, "server_crash.log"), "w") as f:
                 f.write(err)

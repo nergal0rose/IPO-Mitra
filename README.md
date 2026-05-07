@@ -72,7 +72,14 @@ IPO_Mitra/
 ```
 
 ## 🛡️ Privacy & Security
-IPO Mitra is designed to run **locally** on your machine. MeroShare credentials, PINs, and transaction histories are stored locally in the `meroshare.db` SQLite file. This data is never sent to any external server other than the official MeroShare APIs required for authentication and application submission.
+IPO Mitra is designed to run **locally** on your machine. MeroShare credentials, PINs, and transaction histories are stored locally in the `meroshare.db` SQLite file. 
+
+In the packaged production build, your data is stored in:
+`%APPDATA%\IPO Mitra\meroshare.db`
+
+This ensures your data persists across app restarts, updates, and reinstalls. You can verify your storage paths by visiting `http://127.0.0.1:8000/api/debug/paths` while the app is running.
+
+This data is never sent to any external server other than the official MeroShare APIs required for authentication and application submission.
 
 ## 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.

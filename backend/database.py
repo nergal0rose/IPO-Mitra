@@ -7,6 +7,7 @@ sqlite_url = f"sqlite:///{sqlite_file_name}"
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=False, connect_args=connect_args)
+print(f"[database] DB path: {os.path.abspath(sqlite_file_name)}", flush=True)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
