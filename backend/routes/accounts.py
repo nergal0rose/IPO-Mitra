@@ -51,6 +51,8 @@ class AccountCreate(BaseModel):
     group_label: str = "Family"
     active: bool = True
     is_primary: bool = False
+    bank_id: Optional[int] = None
+    bank_name: Optional[str] = ""
 
 class AccountUpdate(BaseModel):
     name: str
@@ -63,8 +65,8 @@ class AccountUpdate(BaseModel):
     group_label: str = "Family"
     active: bool = True
     is_primary: bool = False
-    bank_id: int = None
-    bank_name: str = ""
+    bank_id: Optional[int] = None
+    bank_name: Optional[str] = ""
 
 class AccountResponse(BaseModel):
     id: int
@@ -167,7 +169,9 @@ def create_account(
         default_kitta=account_in.default_kitta,
         group_label=account_in.group_label,
         active=account_in.active,
-        is_primary=account_in.is_primary
+        is_primary=account_in.is_primary,
+        bank_id=account_in.bank_id,
+        bank_name=account_in.bank_name
     )
     session.add(account)
     session.commit()

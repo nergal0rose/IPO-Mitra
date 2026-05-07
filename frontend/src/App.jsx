@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { LayoutGrid, Wallet, CheckCircle, FileText, Settings, LogOut, Key, Calendar, Menu, Zap, BarChart2, TrendingUp, Loader2 } from 'lucide-react';
 import { getPin, setPin, clearPin } from './lib/api';
@@ -142,9 +143,10 @@ function ChangePinModal({ onClose }) {
       .finally(() => setLoading(false));
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="page-enter" style={{ background: '#FFF', padding: '48px', borderRadius: '40px', width: '100%', maxWidth: 440, boxShadow: '0 32px 64px rgba(0,0,0,0.15)' }}>
+  return createPortal(
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, overflowY: 'auto', background: 'rgba(0,0,0,0.75)' }}>
+      <div style={{ padding: '32px 16px' }}>
+        <div className="page-enter" style={{ background: '#FFF', padding: '48px', borderRadius: '40px', width: '100%', maxWidth: 440, margin: '0 auto', boxShadow: '0 32px 64px rgba(0,0,0,0.15)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ width: 56, height: 56, background: '#F8F9FB', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#000', border: '1px solid #F1F1F4' }}>
             <Key size={24} />
@@ -175,8 +177,10 @@ function ChangePinModal({ onClose }) {
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

@@ -41,6 +41,7 @@ function startBackend() {
     cwd: path.dirname(exePath),
     windowsHide: true,
     stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, IPO_MITRA_DATA_DIR: app.getPath('userData') }
   });
 
   backendProcess.stdout.on('data', (d) => log(`backend: ${d.toString().trim()}`));

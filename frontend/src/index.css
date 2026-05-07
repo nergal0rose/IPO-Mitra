@@ -42,7 +42,6 @@ body {
   background-color: var(--bg-base);
   color: var(--text-primary);
   font-size: 14px;
-  overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
 

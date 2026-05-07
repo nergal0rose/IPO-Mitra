@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../lib/api';
 import { UserPlus, Trash2, Edit2, Activity, X, ShieldCheck, Star, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../components/Toast';
@@ -77,9 +78,13 @@ export default function Accounts() {
     setEditSecrets({});
     setShowFields({});
     api.get(`/api/accounts/${acc.id}/secrets`)
-      .then(r => setEditSecrets(r.data))
-      .catch(() => {});
-    setShowForm(true);
+      .then(r => {
+        setEditSecrets(r.data);
+        setShowForm(true);
+      })
+      .catch(() => {
+        setShowForm(true);
+      });
   };
 
   const handleSubmit = (e) => {
@@ -148,9 +153,10 @@ export default function Accounts() {
       </div>
 
       {/* Form Overlay */}
-      {showForm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(15, 23, 42, 0.65)' }}>
-          <div className="page-enter" style={{ background: '#FFF', borderRadius: '32px', width: '100%', maxWidth: 580, boxShadow: '0 24px 48px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+      {showForm && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, overflowY: 'auto', background: 'rgba(15, 23, 42, 0.65)' }}>
+          <div style={{ padding: '32px 16px' }}>
+            <div className="page-enter" style={{ background: '#FFF', borderRadius: '32px', width: '100%', maxWidth: 580, margin: '0 auto', boxShadow: '0 24px 48px rgba(0,0,0,0.15)' }}>
             <div style={{ padding: '32px 36px 0 36px', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
               <div>
                 <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#000', letterSpacing: '-0.02em' }}>{editing ? 'Edit Account' : 'Connect New Account'}</h3>
@@ -205,8 +211,10 @@ export default function Accounts() {
               </div>
             </form>
             </div>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Account Grid */}
