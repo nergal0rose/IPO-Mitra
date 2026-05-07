@@ -72,7 +72,7 @@ echo ==================================================
 echo BUILD COMPLETE!
 echo ==================================================
 echo.
-echo Installer is in: release\IPO Mitra Setup 1.0.0.exe
+echo Installer is in: release\IPO Mitra Setup 1.0.1.exe
 echo.
 echo Share that single .exe file. Users double-click to install.
 echo It creates Desktop + Start Menu shortcuts automatically.
